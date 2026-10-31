@@ -204,6 +204,73 @@ func main() {
 
 ---
 
+## 🛠 Adding Custom Roles (Extensibility Guide)
+
+`gemini-mode-argon` is designed to be fully extensible. You can define your own specialized domain roles (e.g., `secops`, `mlops`, `frontend`, `product`) in 3 simple steps:
+
+### Step 1: Create the Skill Definition File
+Create a new directory and `SKILL.md` file inside the `skills/` folder:
+`skills/gemini-mode-argon-<role-name>/SKILL.md`
+
+Example for a new **`secops`** role (`skills/gemini-mode-argon-secops/SKILL.md`):
+
+```markdown
+---
+name: gemini-mode-argon-secops
+description: Cloud security and application security hardening specialist. Triggered via /gemini-mode-argon-secops [on|off].
+---
+
+# Gemini Mode Argon: SecOps (/gemini-mode-argon-secops)
+
+Activates the **Application Security & Hardening Engine**.
+
+## Usage
+- `/gemini-mode-argon-secops on` (or `/gemini-mode-argon-secops`): Enables threat modeling, CVE audits, secret safety, and IAM least-privilege policies.
+- `/gemini-mode-argon-secops off`: Returns to standard assistant behavior.
+
+## Mandatory Active Status Badge
+When active, every response begins with:
+`> 🟢 **gemini-mode-argon-secops: ON**`
+```
+
+---
+
+### Step 2: Register in `rules/AGENTS.md`
+Open `rules/AGENTS.md` and add your role to three sections:
+
+#### 1. Add to Track 2 (Autonomous Role Dispatcher Table):
+```markdown
+| **Security / IAM / CVE / Hardening / Pentest** | **`secops`** | Zero-trust least-privilege, threat surface modeling, secret zero-leakage, container hardening. |
+```
+
+#### 2. Define its "Missing Middle" in Track 3 (Universal Triad Pattern):
+```markdown
+- **`secops`:** Ignoring security entirely $\longleftrightarrow$ **Automated Static Scanning & Hardened Baseline Defaults (Jalan Tengah)** $\longleftrightarrow$ Rigid security bureaucracy that halts all shipping.
+```
+
+#### 3. Define its Tailored Adaptive Pre-Flight Checklist:
+```markdown
+  - **`secops` (3–4 pts):** Threat Surface & Asset Scope → Attack Vectors & CVE Severity → Blast Radius Assessment → Non-Destructive Remediation Verification.
+```
+
+---
+
+### Step 3: Use and Verify Your Role
+
+Once registered, Antigravity automatically loads the new role upon next prompt:
+
+1. **Automatic Detection (Full Auto):**
+   * Ask any question matching the role's domain keywords:
+     > *"Audit our Dockerfile and IAM policy for secret leaks and root privileges."*
+   * The engine automatically activates:
+     `> 🟢 **gemini-mode-argon [AUTO: secops] [high]**`
+2. **Manual Command Override:**
+   * Lock via master role override: `/gemini-mode-argon role secops`
+   * Lock via dedicated slash command: `/gemini-mode-argon-secops on`
+   * Deactivate: `/gemini-mode-argon-secops off`
+
+---
+
 ## 🛡 Circuit Breakers & Safety Guards
 
 * **2-Strike Circuit Breaker:** Stops execution if any command or tool fails twice with the identical error, preventing infinite loops and prompting immediate strategy pivot.

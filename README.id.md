@@ -204,6 +204,73 @@ func main() {
 
 ---
 
+## 🛠 Panduan Menambahkan Peran Kustom Baru
+
+`gemini-mode-argon` dirancang secara modular dan mudah dikembangkan (*fully extensible*). Anda dapat menambahkan spesialisasi peran domain Anda sendiri (misal: `secops`, `mlops`, `frontend`, `product`) hanya dalam 3 langkah mudah:
+
+### Langkah 1: Buat Berkas Definisi Skill
+Buat folder dan berkas `SKILL.md` baru di dalam direktori `skills/`:
+`skills/gemini-mode-argon-<nama-peran>/SKILL.md`
+
+Contoh untuk peran baru **`secops`** (`skills/gemini-mode-argon-secops/SKILL.md`):
+
+```markdown
+---
+name: gemini-mode-argon-secops
+description: Spesialis pengerasan keamanan cloud dan aplikasi. Dipicu via /gemini-mode-argon-secops [on|off].
+---
+
+# Gemini Mode Argon: SecOps (/gemini-mode-argon-secops)
+
+Mengaktifkan **Mesin Audit Keamanan & Hardening Aplikasi**.
+
+## Penggunaan
+- `/gemini-mode-argon-secops on` (atau `/gemini-mode-argon-secops`): Mengaktifkan pemodelan ancaman, audit CVE, keamanan rahasia (*secrets*), dan kebijakan IAM least-privilege.
+- `/gemini-mode-argon-secops off`: Kembali ke perilaku asisten standar.
+
+## Badge Status Wajib
+Saat aktif, setiap respons diawali dengan:
+`> 🟢 **gemini-mode-argon-secops: ON**`
+```
+
+---
+
+### Langkah 2: Daftarkan di `rules/AGENTS.md`
+Buka `rules/AGENTS.md` dan tambahkan peran baru Anda ke 3 bagian:
+
+#### 1. Tambahkan ke Tabel Track 2 (Autonomous Role Dispatcher):
+```markdown
+| **Security / IAM / CVE / Hardening / Pentest** | **`secops`** | Zero-trust least-privilege, pemodelan vektor ancaman, zero secret leakage, hardening container. |
+```
+
+#### 2. Definisikan "Jalan Tengah"-nya di Track 3 (Universal Triad Pattern):
+```markdown
+- **`secops`:** Mengabaikan keamanan sepenuhnya $\longleftrightarrow$ **Automated Static Scanning & Hardened Baseline Defaults (Jalan Tengah)** $\longleftrightarrow$ Birokrasi keamanan kaku yang menghentikan rilis fitur.
+```
+
+#### 3. Definisikan Checklist Pre-Flight-nya (3–4 Poin):
+```markdown
+  - **`secops` (3–4 pts):** Batas Vektor Ancaman → Tingkat Keparahan CVE & Bukti Eksploitasi → Evaluasi Blast Radius → Verifikasi Remediasi Non-Destruktif.
+```
+
+---
+
+### Langkah 3: Gunakan dan Validasi Peran Baru Anda
+
+Setelah disimpan, Antigravity akan otomatis mendeteksi peran baru pada prompt berikutnya:
+
+1. **Deteksi Otomatis (Full Auto):**
+   * Berikan pertanyaan yang memuat kata kunci domain tersebut:
+     > *"Audit Dockerfile dan policy IAM kita dari risiko kebocoran secret dan izin root."*
+   * Mesin akan otomatis aktif dengan badge:
+     `> 🟢 **gemini-mode-argon [AUTO: secops] [high]**`
+2. **Override Manual via Perintah:**
+   * Kunci lewat perintah peran master: `/gemini-mode-argon role secops`
+   * Kunci lewat slash command peran: `/gemini-mode-argon-secops on`
+   * Matikan peran: `/gemini-mode-argon-secops off`
+
+---
+
 ## 🛡 Circuit Breakers & Batasan Keamanan
 
 * **2-Strike Circuit Breaker:** Menghentikan proses secara otomatis jika suatu perintah terminal atau alat mengalami kegagalan 2 kali berturut-turut dengan eror yang sama.
