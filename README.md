@@ -40,6 +40,11 @@ A high-performance reasoning and operational engine for **Google Antigravity**, 
                                                │ • devops     : SRE & CI/CD       │
                                                │ • researcher : Grounded facts    │
                                                │ • general    : 1st-principles    │
+                                               ├──────────────────────────────────┤
+                                               │ • ui-designer: Figma & Tokens    │
+                                               │ • vector-des.: Affinity & SVG    │
+                                               │ • 3d-designer: Blender & glTF    │
+                                               │ • motion-des.: Video & Easing    │
                                                └──────────────────────────────────┘
 ```
 
@@ -83,14 +88,20 @@ Restart Antigravity or open a new conversation. Antigravity will automatically d
 
 ### 3. Dedicated Role Overrides
 * `/gemini-mode-argon role auto`: Dynamic role detection *(default)*.
-* `/gemini-mode-argon-engineer on`: Lock into Principal Software Engineer mode.
-* `/gemini-mode-argon-architect on`: Lock into Principal Systems Architect mode.
-* `/gemini-mode-argon-reviewer on`: Lock into Read-Only Security Auditor & PR Reviewer mode.
-* `/gemini-mode-argon-tester on`: Lock into QA & Test Automation Specialist mode.
-* `/gemini-mode-argon-dba on`: Lock into Database Administrator & SQL Performance mode.
-* `/gemini-mode-argon-devops on`: Lock into SRE & Infrastructure Automation mode.
-* `/gemini-mode-argon-researcher on`: Lock into Primary-Source Technical Researcher mode.
-* `/gemini-mode-argon-general on`: Lock into First-Principles Cross-Domain Strategist mode.
+* **Technical Suite:**
+  * `/gemini-mode-argon-engineer on`: Lock into Principal Software Engineer mode.
+  * `/gemini-mode-argon-architect on`: Lock into Principal Systems Architect mode.
+  * `/gemini-mode-argon-reviewer on`: Lock into Read-Only Security Auditor & PR Reviewer mode.
+  * `/gemini-mode-argon-tester on`: Lock into QA & Test Automation Specialist mode.
+  * `/gemini-mode-argon-dba on`: Lock into Database Administrator & SQL Performance mode.
+  * `/gemini-mode-argon-devops on`: Lock into SRE & Infrastructure Automation mode.
+  * `/gemini-mode-argon-researcher on`: Lock into Primary-Source Technical Researcher mode.
+  * `/gemini-mode-argon-general on`: Lock into First-Principles Cross-Domain Strategist mode.
+* **Creative Suite:**
+  * `/gemini-mode-argon-ui-designer on`: Lock into Principal UI/UX & Design Systems mode.
+  * `/gemini-mode-argon-vector-designer on`: Lock into Precision Vector & Affinity Designer mode.
+  * `/gemini-mode-argon-3d-designer on`: Lock into 3D Artist & Blender bpy mode.
+  * `/gemini-mode-argon-motion-designer on`: Lock into Motion Designer & Remotion/FFmpeg mode.
 
 ---
 
@@ -108,6 +119,10 @@ Instead of enforcing a rigid, generic 4-point template across all domains, **`ge
 | **`reviewer`** | 3–4 | `1. Audit Scope` → `2. OWASP & Concurrency Risks` → `3. Blast Radius` → `4. Production Readiness Score` | Strictly read-only, threat surface triage, production readiness (1–10) |
 | **`researcher`** | 3–4 | `1. Research Scope` → `2. Source Trust Hierarchy` → `3. Deprecation & Version Drift` → `4. Grounded Evidence` | Zero hallucination, primary sources only, version-pinned verification |
 | **`general`** | 3–4 | `1. Frame Invalidation` → `2. Orthogonal Space` → `3. Causal Mechanisms` → `4. Decisive Recommendation` | First-principles decomposition, Pareto synthesis, anti-sycophancy |
+| **`ui-designer`** | 3–4 | `1. Viewport & Density` → `2. Information Hierarchy` → `3. Token Mapping (Color/Grid)` → `4. 5 Micro-States & Edge-Cases` | W3C Design Tokens, WCAG contrast (4.5:1), touch targets (44px), Figma Auto-Layout |
+| **`vector-designer`** | 3–4 | `1. Canvas/ViewBox Target` → `2. Geometry & Booleans` → `3. Node Density & Precision` → `4. Export & Byte Budget` | Affinity Designer MCP (`localhost:6767/sse`), Bézier curve economics, surgical SVG |
+| **`3d-designer`** | 3–4 | `1. Output Target (Web/Render)` → `2. Topology & Budget` → `3. PBR Shader Strategy` → `4. Lighting & Staging` | Blender `bpy` headless scripting, clean quad topology, PBR realism, glTF/GLB Draco |
+| **`motion-designer`** | 3–4 | `1. FPS & Duration Target` → `2. Easing & Interpolation` → `3. Layers & Keyframes` → `4. Performance Budget` | Remotion programmatic video, FFmpeg filtering, physics cubic-bezier easing, Lottie |
 
 > 💡 **Casual / Trivial Queries (`low`):** **Zero Pre-Flight** — instant, conversational responses with zero checklist overhead (< 1 sec).
 

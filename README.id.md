@@ -40,6 +40,11 @@ Mesin operasional dan penalaran berkinerja tinggi untuk **Google Antigravity**, 
                                                │ • devops     : SRE & CI/CD       │
                                                │ • researcher : Riset sumber data │
                                                │ • general    : Analisis umum     │
+                                               ├──────────────────────────────────┤
+                                               │ • ui-designer: Figma & Tokens    │
+                                               │ • vector-des.: Affinity & SVG    │
+                                               │ • 3d-designer: Blender & glTF    │
+                                               │ • motion-des.: Video & Easing    │
                                                └──────────────────────────────────┘
 ```
 
@@ -83,14 +88,20 @@ Buka kembali Antigravity atau mulai percakapan baru. Sistem akan langsung mendet
 
 ### 3. Override Peran Tertentu (Role)
 * `/gemini-mode-argon role auto`: Deteksi peran otonom *(default)*.
-* `/gemini-mode-argon-engineer on`: Kunci ke mode Principal Software Engineer.
-* `/gemini-mode-argon-architect on`: Kunci ke mode Principal Systems Architect.
-* `/gemini-mode-argon-reviewer on`: Kunci ke mode Read-Only Security Auditor & Reviewer.
-* `/gemini-mode-argon-tester on`: Kunci ke mode QA & Test Automation Specialist.
-* `/gemini-mode-argon-dba on`: Kunci ke mode Database Administrator & SQL Performance.
-* `/gemini-mode-argon-devops on`: Kunci ke mode SRE & Infrastructure Automation.
-* `/gemini-mode-argon-researcher on`: Kunci ke mode Peneliti Teknis & Verifikasi Fakta.
-* `/gemini-mode-argon-general on`: Kunci ke mode Pemecah Masalah Lintas Domain.
+* **Suite Teknikal:**
+  * `/gemini-mode-argon-engineer on`: Kunci ke mode Principal Software Engineer.
+  * `/gemini-mode-argon-architect on`: Kunci ke mode Principal Systems Architect.
+  * `/gemini-mode-argon-reviewer on`: Kunci ke mode Read-Only Security Auditor & Reviewer.
+  * `/gemini-mode-argon-tester on`: Kunci ke mode QA & Test Automation Specialist.
+  * `/gemini-mode-argon-dba on`: Kunci ke mode Database Administrator & SQL Performance.
+  * `/gemini-mode-argon-devops on`: Kunci ke mode SRE & Infrastructure Automation.
+  * `/gemini-mode-argon-researcher on`: Kunci ke mode Peneliti Teknis & Verifikasi Fakta.
+  * `/gemini-mode-argon-general on`: Kunci ke mode Pemecah Masalah Lintas Domain.
+* **Suite Kreatif:**
+  * `/gemini-mode-argon-ui-designer on`: Kunci ke mode Principal UI/UX & Design Systems.
+  * `/gemini-mode-argon-vector-designer on`: Kunci ke mode Precision Vector & Affinity Designer.
+  * `/gemini-mode-argon-3d-designer on`: Kunci ke mode 3D Artist & Blender bpy.
+  * `/gemini-mode-argon-motion-designer on`: Kunci ke mode Motion Designer & Remotion/FFmpeg.
 
 ---
 
@@ -108,6 +119,10 @@ Alih-alih memaksakan 4-poin kaku seragam untuk seluruh domain, **`gemini-mode-ar
 | **`reviewer`** | 3–4 | `1. Batas Audit` → `2. Risiko OWASP & Konkurensi` → `3. Blast Radius` → `4. Skor Kesiapan Produksi` | Bersifat read-only, triage vektor ancaman, skor kesiapan (1–10) |
 | **`researcher`** | 3–4 | `1. Lingkup Riset` → `2. Hirarki Sumber Primer` → `3. Depresi & Versi API` → `4. Bukti Ter-grounding` | Nol halusinasi, grounded pada sumber resmi, verifikasi versi rilis |
 | **`general`** | 3–4 | `1. Validasi Bingkai` → `2. Ruang Solusi Ortogonal` → `3. Mekanisme Kausal` → `4. Keputusan Tegas` | Dekomposisi first-principles, sintesis Pareto, anti-sikofansi |
+| **`ui-designer`** | 3–4 | `1. Viewport & Kerapatan` → `2. Hierarki Visual & WCAG` → `3. Pemetaan Token (Warna/Spasi)` → `4. 5 Micro-States & Kasus Ekstrim` | W3C Design Tokens, kontras WCAG (4.5:1), touch target (44px), Figma Auto-Layout |
+| **`vector-designer`** | 3–4 | `1. Target Kanvas/ViewBox` → `2. Geometri & Operasi Boolean` → `3. Kerapatan & Presisi Node` → `4. Format & Budget Byte` | Affinity Designer MCP (`localhost:6767/sse`), Bézier curve economics, SVG presisi |
+| **`3d-designer`** | 3–4 | `1. Target Output (Web/Render)` → `2. Topologi & Budget Poli` → `3. Strategi Shader PBR` → `4. Pencahayaan & Staging` | Scripting headless Blender `bpy`, topologi quad bersih, realisme PBR, kompresi glTF Draco |
+| **`motion-designer`** | 3–4 | `1. Target FPS & Durasi` → `2. Kurva Easing & Interpolasi` → `3. Hierarki Layer & Keyframe` → `4. Budget Performa & Encoding` | Video programatis Remotion, pipeline FFmpeg, easing fisika cubic-bezier, animasi Lottie |
 
 > 💡 **Tugas Ringan / Kasual (`low`):** **Zero Pre-Flight** — langsung jawab instan dan ramah tanpa beban checklist (< 1 detik).
 
