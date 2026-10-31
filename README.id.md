@@ -79,7 +79,7 @@ Buka kembali Antigravity atau mulai percakapan baru. Sistem akan langsung mendet
 * `/gemini-mode-argon level auto`: Eskalasi dinamis sesuai bobot tugas *(bawaan/default)*.
 * `/gemini-mode-argon level low`: Mode cepat System 1; tanpa overhead Pre-Flight (< 1 detik).
 * `/gemini-mode-argon level medium`: Mode System 2 seimbang dengan Pre-Flight ringkas (1–3 detik).
-* `/gemini-mode-argon level high`: Ketelitian maksimal (~92% Argon) dengan eksekusi terminal dan perbaikan mandiri (5–10 detik).
+* `/gemini-mode-argon level high`: Reflexion System 2 mendalam dengan eksekusi terminal dan auto-healing mandiri (5–10 detik).
 
 ### 3. Override Peran Tertentu (Role)
 * `/gemini-mode-argon role auto`: Deteksi peran otonom *(default)*.
@@ -110,6 +110,97 @@ Alih-alih memaksakan 4-poin kaku seragam untuk seluruh domain, **`gemini-mode-ar
 | **`general`** | 3–4 | `1. Validasi Bingkai` → `2. Ruang Solusi Ortogonal` → `3. Mekanisme Kausal` → `4. Keputusan Tegas` | Dekomposisi first-principles, sintesis Pareto, anti-sikofansi |
 
 > 💡 **Tugas Ringan / Kasual (`low`):** **Zero Pre-Flight** — langsung jawab instan dan ramah tanpa beban checklist (< 1 detik).
+
+---
+
+## 💡 Contoh Penggunaan Nyata
+
+Berikut adalah bagaimana `gemini-mode-argon` merespons skenario teknis di dunia nyata:
+
+### 1. Arsitektur Sistem: Penerapan Pola Triad (`architect` | `high`)
+Saat dihadapkan pada dilema biner, agen secara cerdas menolak jebakan sempit dan mengangkat *The Missing Middle* ("Jalan Tengah"):
+
+> **Prompt Pengguna:** *"Aplikasi kami mulai lambat karena banyak proses asynchronous (email, kompresi gambar, webhook sync). Apakah sebaiknya kami buat background queue sendiri pakai Cron Job polling database, atau langsung pasang Apache Kafka / RabbitMQ?"*
+
+```text
+> 🟢 gemini-mode-argon [AUTO: architect] [high]
+
+### Argon [architect] Pre-Flight
+- Selective De-anchoring & Spectrum Check: Menolak dikotomi biner; mengevaluasi alternatif OSS/Headless.
+- Domain Boundaries & System Topology: Asynchronous Task Processing vs Event Streaming; idempotensi & DLQ.
+- Multi-Dimensional Trade-off Matrix: Latensi eksekusi, beban database OLTP, beban pemeliharaan cluster.
+- Opinionated ADR Recommendation: Rekomendasi terarah yang disesuaikan dengan skala tim saat ini.
+
+[Executive Verdict]
+Untuk 95% aplikasi web modern, jangan gunakan Cron Job polling database, dan jangan terburu-buru memasang Apache Kafka. Pilihan paling pragmatis dan teruji di industri adalah "Jalan Tengah": gunakan antrean berbasis Redis (BullMQ/Sidekiq/Celery) atau PostgreSQL FOR UPDATE SKIP LOCKED.
+
+[The Hidden Iceberg]
+- Cron DB Polling: Memicu race condition, eksekusi ganda, dan beban I/O konstan pada database produksi Anda.
+- Apache Kafka: Dirancang untuk event streaming skala masif, bukan antrean tugas background (sulit per-task retry/delay).
+
+[Matriks Komparasi Triad]
+| Dimensi Evaluasi | 1. Custom Cron + DB Polling | 2. Jalan Tengah (Redis / SKIP LOCKED) | 3. Enterprise Broker (Kafka) |
+| Waktu & Latensi | Rawan bug, jeda 1m+ | Instan (<10ms), siap dalam hitungan jam | Berpekan-pekan konfigurasi cluster |
+| Beban DB Produksi | Tinggi (lock contention) | Nol (Redis) / Minimal (SKIP LOCKED) | Nol (cluster broker terisolasi) |
+| Fitur Antrean Bawaan | Wajib koding manual | Bawaan library (retry backoff, DLQ) | Butuh arsitektur custom rumit |
+
+[Empati Rekayasa Nyata]
+- Queue Isolation: Pisahkan worker kompresi gambar (CPU-bound) dari antrean email notifikasi (latensi kritis).
+```
+
+---
+
+### 2. Rekayasa Bedah: Eksekusi Terminal & Self-Healing Mandiri (`engineer` | `high`)
+Saat memperbaiki bug atau mengimplementasikan fitur, agen menerapkan *strict read-before-write* dan berulang kali menguji hingga exit code 0:
+
+> **Prompt Pengguna:** *"Test suite auth kita gagal dengan TypeError di middleware refresh token, tolong perbaiki dan pastikan semua test lulus."*
+
+```text
+> 🟢 gemini-mode-argon [AUTO: engineer] [high]
+
+### Argon [engineer] Pre-Flight
+- Target Scope & Blast Radius: auth/middleware.ts & logika verifikasi token.
+- Invariants & System Contracts: Mempertahankan struktur claims JWT; tangani token null/expired secara aman.
+- Edge-Cases & Null Safety: Header authorization kosong, token payload rusak, token reuse detection.
+- Concrete Verification Test: CI=true npm test auth.test.ts.
+
+[Alur Eksekusi]
+1. Membaca auth/middleware.ts dengan read_file (mempertahankan komentar/docstring).
+2. Menerapkan penggantian chunk bedah via edit_file (zero placeholder // TODO).
+3. Menjalankan perintah terminal: CI=true npm test auth.test.ts.
+4. Menangkap exit code dan stderr: jika assertion gagal, agen menganalisis eror dan memperbaiki kode kembali.
+5. Melaporkan solusi ke pengguna hanya setelah mencapai Exit Code 0.
+```
+
+---
+
+### 3. Kueri Ringan / Kasual: Zero Pre-Flight Overhead (< 1s) (`general` | `low`)
+Pertanyaan cepat dan sederhana langsung dijawab tanpa checklist birokrasi:
+
+> **Prompt Pengguna:** *"Bagaimana cara convert string ke integer di Go?"*
+
+```text
+> 🟢 gemini-mode-argon [AUTO: general] [low]
+
+Gunakan package standar `strconv.Atoi`:
+
+package main
+
+import (
+    "fmt"
+    "strconv"
+)
+
+func main() {
+    i, err := strconv.Atoi("42")
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(i) // 42
+}
+
+*(Zero Pre-Flight checklist overhead, respons System 1 instan).*
+```
 
 ---
 

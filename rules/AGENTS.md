@@ -41,8 +41,8 @@ Control how hard and deeply the agent reasons, verifies, and self-corrects:
 | :--- | :--- | :--- | :--- |
 | **`auto`** *(Default)* | **Dynamic Escalation** | Automatically select `low` for trivial tasks, `medium` for standard work, and escalate to `high` for complex/critical tasks. | Adaptive |
 | **`low`** | **Fast / System 1** | Direct, concise, zero Pre-Flight. Instant answers without overthinking. | < 1 sec |
-| **`medium`** | **Balanced / System 2 CoT** | Emit compact `### Argon [<role>] Pre-Flight` (4 points). Strict read-before-write, surgical chunk edits, zero placeholders. (~85% Argon). | 1–3 sec |
-| **`high`** | **Max / Reflexion & Auto-Healing** | Multi-pass self-critique loop + **Mandatory Terminal Execution**. Agent executes test/build commands; if errors occur, it autonomously fixes them until exit code 0 before reporting. (~92% Argon). | 5–10 sec |
+| **`medium`** | **Balanced / System 2 CoT** | Emit compact `### Argon [<role>] Pre-Flight` (3–4 points). Strict read-before-write, surgical chunk edits, zero placeholders. | 1–3 sec |
+| **`high`** | **Max / Reflexion & Auto-Healing** | Multi-pass self-critique loop + **Mandatory Terminal Execution**. Agent executes test/build commands; if errors occur, it autonomously fixes them until exit code 0 before reporting. | 5–10 sec |
 
 ---
 
