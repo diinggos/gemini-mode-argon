@@ -96,17 +96,20 @@ Buka kembali Antigravity atau mulai percakapan baru. Sistem akan langsung mendet
 
 ## 📋 Protokol Adaptive Pre-Flight Berbasis Peran
 
-Alih-alih memaksakan 4-poin kaku seragam untuk seluruh domain, **`gemini-mode-argon`** menerapkan **Protokol Adaptive Pre-Flight (3–5 poin)** yang beradaptasi secara dinamis sesuai kebutuhan dan profil risiko spesifik dari peran yang sedang aktif:
+Alih-alih memaksakan 4-poin kaku seragam untuk seluruh domain, **`gemini-mode-argon`** menerapkan **Protokol Adaptive Pre-Flight (3–5 poin)** yang beradaptasi secara dinamis sesuai kebutuhan dan profil risiko spesifik dari peran yang sedang aktif.
 
-* **`engineer` (3–4 Poin):** Scope & Blast Radius $\to$ Invariants & Kontrak Sistem $\to$ Edge-Cases & Null Safety $\to$ Tes Verifikasi Konkret.
-* **`dba` (4–5 Poin):** Target Query/DDL $\to$ Risiko Table Lock & Blast Radius $\to$ Strategi Indeks $\to$ **Rencana Rollback & Keamanan Data** $\to$ Validasi EXPLAIN.
-* **`devops` (4–5 Poin):** Lingkup Lingkungan $\to$ Keamanan Secrets & Izin $\to$ Kesehatan Pipeline/Container $\to$ **Rencana Rollback** $\to$ Verifikasi Smoke Test.
-* **`reviewer` (3–4 Poin):** Batas Audit $\to$ Vektor Ancaman (OWASP/Race Condition) $\to$ Blast Radius $\to$ Skor Kesiapan Produksi (*Production Readiness Score*).
-* **`tester` (3–4 Poin):** Fungsi Target $\to$ Partisi Ekivalensi & Batas $\to$ Vektor Injeksi Kesalahan (*Fault Injection*) $\to$ Isolasi Hermetic Mock.
-* **`architect` (3–4 Poin):** De-anchoring Selektif & Cek Spektrum (jika makro) $\to$ Batas Domain & Topologi Sistem $\to$ Matriks Trade-off Multi-Dimensi $\to$ Rekomendasi ADR Berbobot (*Opinionated*).
-* **`researcher` (3–4 Poin):** Lingkup Riset $\to$ Hirarki Kepercayaan Sumber Primer $\to$ Depresi & Perubahan Versi $\to$ Verifikasi Bukti Ter-grounding.
-* **`general` (3–4 Poin):** Validasi Bingkai & Asumsi Tersembunyi $\to$ Ruang Solusi Ortogonal $\to$ Mekanisme Kausal $\to$ Rekomendasi Keputusan Tegas.
-* **Tugas Ringan / Kasual (`low`):** **Zero Pre-Flight** — langsung jawab instan dan ramah tanpa beban checklist.
+| Peran | Poin | Langkah Protokol Pre-Flight | Fokus & Target Keamanan |
+| :--- | :---: | :--- | :--- |
+| **`engineer`** | 3–4 | `1. Scope & Blast Radius` → `2. Invariants & Kontrak` → `3. Edge-Cases & Null Safety` → `4. Tes Verifikasi` | Bebas regresi, eksekusi non-interaktif, tes terminal tervalidasi |
+| **`dba`** | 4–5 | `1. Target Query/DDL` → `2. Lock & Blast Radius` → `3. Strategi Indeks` → `4. Rencana Rollback` → `5. Cek EXPLAIN` | Bebas lock tabel, urutan composite index, keamanan data mutlak |
+| **`architect`** | 3–4 | `1. De-anchoring Selektif` → `2. Batas Domain` → `3. Matriks Triad Trade-off` → `4. Rekomendasi ADR` | Anti-dikotomi biner, eksplorasi "Jalan Tengah" (OSS/Headless), empati DX |
+| **`devops`** | 4–5 | `1. Lingkup Environment` → `2. Keamanan Secrets` → `3. Kesehatan Pipeline/Container` → `4. Rencana Rollback` → `5. Smoke Test` | Container non-root, proteksi kebocoran rahasia, rollback otomatis |
+| **`tester`** | 3–4 | `1. Fungsi Target` → `2. Partisi Ekivalensi` → `3. Injeksi Kesalahan (Fault)` → `4. Isolasi Hermetic Mock` | Anti-bias happy-path, pengujian batas negatif, isolasi mock hermetik |
+| **`reviewer`** | 3–4 | `1. Batas Audit` → `2. Risiko OWASP & Konkurensi` → `3. Blast Radius` → `4. Skor Kesiapan Produksi` | Bersifat read-only, triage vektor ancaman, skor kesiapan (1–10) |
+| **`researcher`** | 3–4 | `1. Lingkup Riset` → `2. Hirarki Sumber Primer` → `3. Depresi & Versi API` → `4. Bukti Ter-grounding` | Nol halusinasi, grounded pada sumber resmi, verifikasi versi rilis |
+| **`general`** | 3–4 | `1. Validasi Bingkai` → `2. Ruang Solusi Ortogonal` → `3. Mekanisme Kausal` → `4. Keputusan Tegas` | Dekomposisi first-principles, sintesis Pareto, anti-sikofansi |
+
+> 💡 **Tugas Ringan / Kasual (`low`):** **Zero Pre-Flight** — langsung jawab instan dan ramah tanpa beban checklist (< 1 detik).
 
 ---
 

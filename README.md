@@ -96,17 +96,20 @@ Restart Antigravity or open a new conversation. Antigravity will automatically d
 
 ## 📋 The Role-Native Adaptive Pre-Flight Protocol
 
-Instead of enforcing a rigid, generic 4-point template across all domains, **`gemini-mode-argon`** implements a **Role-Native Adaptive Pre-Flight Protocol (3–5 points)** that dynamically tailors its checklist to the exact domain and risk profile of the active role:
+Instead of enforcing a rigid, generic 4-point template across all domains, **`gemini-mode-argon`** implements a **Role-Native Adaptive Pre-Flight Protocol (3–5 points)** that dynamically tailors its verification checklist to the exact domain and risk profile of the active role.
 
-* **`engineer` (3–4 pts):** Target Scope & Blast Radius $\to$ Invariants & System Contracts $\to$ Edge-Cases & Null Safety $\to$ Concrete Verification Test.
-* **`dba` (4–5 pts):** Query/Migration Objective $\to$ Table Lock & Blast Radius $\to$ Index Strategy $\to$ **Rollback & Data Safety Plan** $\to$ EXPLAIN / Metric Check.
-* **`devops` (4–5 pts):** Target Environment $\to$ Secret Safety & Permissions $\to$ Pipeline/Container Health $\to$ **Rollback Strategy** $\to$ Smoke Verification.
-* **`reviewer` (3–4 pts):** Audit Scope & Threat Surface $\to$ OWASP & Concurrency/Memory Risks $\to$ Blast Radius $\to$ Production Readiness Score.
-* **`tester` (3–4 pts):** Target Function $\to$ Equivalence Partitions & Boundaries $\to$ Fault Injection $\to$ Hermetic Mock Isolation.
-* **`architect` (3–4 pts):** Selective De-anchoring & Spectrum Check (if macro) $\to$ Domain Boundaries & System Topology $\to$ Multi-Dimensional Trade-off Matrix $\to$ Opinionated ADR Recommendation.
-* **`researcher` (3–4 pts):** Research Scope $\to$ Primary Source Trust Hierarchy $\to$ Deprecation & Version Drift $\to$ Grounded Evidence Check.
-* **`general` (3–4 pts):** Frame Invalidation & Hidden Assumptions $\to$ Orthogonal Solution Space $\to$ Causal Mechanisms $\to$ Decisive Recommendation.
-* **Casual / Trivial queries (`low`):** **Zero Pre-Flight** — instant, conversational responses with zero overhead.
+| Role | Points | Tailored Pre-Flight Protocol Steps | Focus & Safety Objective |
+| :--- | :---: | :--- | :--- |
+| **`engineer`** | 3–4 | `1. Scope & Blast Radius` → `2. Invariants & Contracts` → `3. Edge-Cases & Null Safety` → `4. Verification Test` | Zero regression, non-interactive flags, verified terminal execution |
+| **`dba`** | 4–5 | `1. Query Objective` → `2. Lock & Blast Radius` → `3. Index Strategy` → `4. Rollback & Data Safety` → `5. EXPLAIN Check` | Zero table lock, composite index order, zero-data-loss rollback |
+| **`architect`** | 3–4 | `1. Selective De-Anchoring` → `2. Domain Boundaries` → `3. Triad Trade-off Matrix` → `4. Opinionated ADR` | Anti-false-dichotomy, "Missing Middle" (OSS/Headless), DX ergonomics |
+| **`devops`** | 4–5 | `1. Target Environment` → `2. Secret Safety` → `3. Pipeline/Container Health` → `4. Rollback Strategy` → `5. Smoke Test` | Multi-stage non-root containers, zero secret leaks, automated rollback |
+| **`tester`** | 3–4 | `1. Function Under Test` → `2. Equivalence Partitions` → `3. Fault Injection` → `4. Hermetic Mock Isolation` | Zero happy-path bias, boundary negative testing, strict test isolation |
+| **`reviewer`** | 3–4 | `1. Audit Scope` → `2. OWASP & Concurrency Risks` → `3. Blast Radius` → `4. Production Readiness Score` | Strictly read-only, threat surface triage, production readiness (1–10) |
+| **`researcher`** | 3–4 | `1. Research Scope` → `2. Source Trust Hierarchy` → `3. Deprecation & Version Drift` → `4. Grounded Evidence` | Zero hallucination, primary sources only, version-pinned verification |
+| **`general`** | 3–4 | `1. Frame Invalidation` → `2. Orthogonal Space` → `3. Causal Mechanisms` → `4. Decisive Recommendation` | First-principles decomposition, Pareto synthesis, anti-sycophancy |
+
+> 💡 **Casual / Trivial Queries (`low`):** **Zero Pre-Flight** — instant, conversational responses with zero checklist overhead (< 1 sec).
 
 ---
 
