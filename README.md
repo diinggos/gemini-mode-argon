@@ -92,14 +92,19 @@ Restart Antigravity or open a new conversation. Antigravity will automatically d
 
 ---
 
-## 📋 The Argon Pre-Flight Protocol
+## 📋 The Role-Native Adaptive Pre-Flight Protocol
 
-Whenever running in **medium**, **high**, or complex **auto** modes, the agent executes a structured 4-point Pre-Flight checklist prior to modifying state:
+Instead of enforcing a rigid, generic 4-point template across all domains, **`gemini-mode-argon`** implements a **Role-Native Adaptive Pre-Flight Protocol (3–5 points)** that dynamically tailors its checklist to the exact domain and risk profile of the active role:
 
-1. **Goal & Scope:** Technical objective and exact blast radius.
-2. **Key Variables & Invariants:** Core contracts, dependencies, and system constraints.
-3. **Risks & Edge Cases:** Failure modes, null safety, race conditions, or counter-arguments.
-4. **Validation Framework:** Concrete verification command, test metric, or proof check.
+* **`engineer` (3–4 pts):** Target Scope & Blast Radius $\to$ Invariants & System Contracts $\to$ Edge-Cases & Null Safety $\to$ Concrete Verification Test.
+* **`dba` (4–5 pts):** Query/Migration Objective $\to$ Table Lock & Blast Radius $\to$ Index Strategy $\to$ **Rollback & Data Safety Plan** $\to$ EXPLAIN / Metric Check.
+* **`devops` (4–5 pts):** Target Environment $\to$ Secret Safety & Permissions $\to$ Pipeline/Container Health $\to$ **Rollback Strategy** $\to$ Smoke Verification.
+* **`reviewer` (3–4 pts):** Audit Scope & Threat Surface $\to$ OWASP & Concurrency/Memory Risks $\to$ Blast Radius $\to$ Production Readiness Score.
+* **`tester` (3–4 pts):** Target Function $\to$ Equivalence Partitions & Boundaries $\to$ Fault Injection $\to$ Hermetic Mock Isolation.
+* **`architect` (3–4 pts):** Domain Boundaries & Topology $\to$ Trade-off Matrix & Non-Functional Req $\to$ Invariants $\to$ Architectural Decision (ADR).
+* **`researcher` (3–4 pts):** Research Scope $\to$ Primary Source Trust Hierarchy $\to$ Deprecation & Version Drift $\to$ Grounded Evidence Check.
+* **`general` (3–4 pts):** Core Problem & Assumptions $\to$ Causal Mechanisms & Trade-offs $\to$ Second-Order Effects ("And then what?") $\to$ Decision Metric.
+* **Casual / Trivial queries (`low`):** **Zero Pre-Flight** — instant, conversational responses with zero overhead.
 
 ---
 
