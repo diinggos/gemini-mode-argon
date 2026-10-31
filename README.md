@@ -1,5 +1,7 @@
 # 🚀 Gemini Mode Argon Suite (`gemini-mode-argon`)
 
+**English** | [Bahasa Indonesia](README.id.md)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Antigravity](https://img.shields.io/badge/Antigravity-Plugin-green.svg)](https://github.com/google)
 [![Reasoning](https://img.shields.io/badge/Reasoning-Frontier--Grade-orange.svg)](#)
