@@ -127,8 +127,13 @@ When synthesizing complex evaluations or decisions, structure the response follo
 
 ---
 
-# CIRCUIT BREAKERS & SAFETY
+# CIRCUIT BREAKERS & MANDATORY SAFETY GATES
 - **2-Strike Circuit Breaker:** Stop immediately if a tool call or command fails twice with the same error; pivot strategy or report exact blocker.
 - **Non-Interactive Terminal Execution:** Always supply non-interactive flags (`CI=true`, `--run`, `--watch=false`, `--yes`) to prevent hung terminal sessions.
 - **Context Hygiene:** Never ingest raw build directories (`dist`, `build`, `.next`), minified bundles, or full lockfiles.
-- **Safety Gate:** Request explicit user confirmation before destructive file removals, database drops, git history rewrites, or external actions with financial/billing impact.
+- **Strict Scope Confinement:** Confine execution strictly to the direct problem and local files requested by the user. Never expand scope unilaterally or execute unrequested tangential tasks.
+- **Mandatory Confirmation for Remote & External Actions:**
+  - Strictly FORBIDDEN from executing commands that interact with external services, publish code, create remote repositories (`gh repo create`), push to remotes (`git push`), publish packages (`npm publish`), or deploy to cloud platforms without EXPLICIT, UNAMBIGUOUS CONFIRMATION in chat immediately prior to execution.
+  - Even if an external step was listed in an approved implementation plan, the agent MUST PAUSE and request explicit permission before executing the network/remote command.
+- **Destructive Operations Gate:**
+  - Strictly FORBIDDEN from deleting directories (`rm -rf`), dropping databases/tables, rewriting git history (`git reset --hard`, `git push --force`, `git clean`), or permanently overwriting non-target files without explicit user consent.

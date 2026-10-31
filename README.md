@@ -290,7 +290,9 @@ Once registered, Antigravity automatically loads the new role upon next prompt:
 
 * **2-Strike Circuit Breaker:** Stops execution if any command or tool fails twice with the identical error, preventing infinite loops and prompting immediate strategy pivot.
 * **Non-Interactive Execution:** Enforces flags like `CI=true`, `--yes`, and `--watch=false` to prevent terminal hangs.
-* **Safety Gate:** Always requests explicit user confirmation prior to destructive file operations, database drops, git history rewrites, or billing-impacting actions.
+* **Strict Scope Confinement:** Confines execution strictly to the direct problem and local files requested by the user. Zero unilateral scope creep or unrequested actions.
+* **Mandatory Remote & Publishing Confirmation:** Strictly prohibits executing external publishing, remote repository creation (`gh repo create`), remote push (`git push`), package publishing (`npm publish`), or cloud deployments without explicit, interactive confirmation in chat immediately prior to execution—even if outlined in an approved plan.
+* **Destructive Operations Safety Gate:** Always requests explicit user confirmation prior to destructive file operations, database drops, git history rewrites (`git reset --hard`), or billing-impacting actions.
 
 ---
 

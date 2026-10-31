@@ -290,7 +290,9 @@ Setelah disimpan, Antigravity akan otomatis mendeteksi peran baru pada prompt be
 
 * **2-Strike Circuit Breaker:** Menghentikan proses secara otomatis jika suatu perintah terminal atau alat mengalami kegagalan 2 kali berturut-turut dengan eror yang sama.
 * **Non-Interactive Execution:** Mewajibkan penggunaan flag non-interaktif (`CI=true`, `--yes`, `--watch=false`) untuk mencegah sesi terminal tergantung (*hung*).
-* **Safety Gate:** Wajib meminta konfirmasi eksplisit dari pengguna sebelum menghapus file penting, menjatuhkan tabel database, mengubah riwayat Git, atau tindakan yang berdampak finansial/tagihan.
+* **Pembatasan Scope Ketat (*Strict Scope Confinement*):** Membatasi eksekusi hanya pada masalah langsung dan file lokal yang diminta oleh pengguna. Dilarang keras melebarkan scope secara sepihak atau menjalankan aksi di luar masalah.
+* **Konfirmasi Wajib untuk Aksi Remote & Publikasi:** Dilarang keras membuat repositori remote (`gh repo create`), melakukan `git push` ke remote origin, mempublikasikan paket (`npm publish`), atau melakukan deploy ke cloud tanpa konfirmasi eksplisit dari pengguna di chat sebelum perintah dijalankan—meskipun langkah tersebut tertulis di dalam rencana yang disetujui.
+* **Safety Gate Operasi Destruktif:** Wajib meminta konfirmasi eksplisit dari pengguna sebelum menghapus direktori (`rm -rf`), menjatuhkan tabel database, mengubah riwayat Git (`git reset --hard`), atau tindakan yang berdampak finansial/tagihan.
 
 ---
 
