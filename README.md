@@ -79,7 +79,7 @@ Restart Antigravity or open a new conversation. Antigravity will automatically d
 * `/gemini-mode-argon level auto`: Dynamic escalation based on task complexity *(default)*.
 * `/gemini-mode-argon level low`: Fast System 1 mode; zero Pre-Flight overhead (< 1s).
 * `/gemini-mode-argon level medium`: Balanced System 2 CoT with compact 4-point Pre-Flight (1–3s).
-* `/gemini-mode-argon level high`: Maximum rigor (~92% Argon equivalence) with mandatory terminal execution and autonomous auto-healing (5–10s).
+* `/gemini-mode-argon level high`: Deep multi-pass reflexion with mandatory terminal auto-healing (5–10s).
 
 ### 3. Dedicated Role Overrides
 * `/gemini-mode-argon role auto`: Dynamic role detection *(default)*.
@@ -110,6 +110,97 @@ Instead of enforcing a rigid, generic 4-point template across all domains, **`ge
 | **`general`** | 3–4 | `1. Frame Invalidation` → `2. Orthogonal Space` → `3. Causal Mechanisms` → `4. Decisive Recommendation` | First-principles decomposition, Pareto synthesis, anti-sycophancy |
 
 > 💡 **Casual / Trivial Queries (`low`):** **Zero Pre-Flight** — instant, conversational responses with zero checklist overhead (< 1 sec).
+
+---
+
+## 💡 Real-World Examples in Action
+
+Here is how `gemini-mode-argon` behaves across real engineering and architectural tasks:
+
+### 1. Systems Architecture: The Universal Triad Pattern (`architect` | `high`)
+When presented with a binary dilemma, the engine avoids simplistic trade-offs and surfaces the *Missing Middle*:
+
+> **User Prompt:** *"Our app is getting slow due to background tasks (emails, image processing, webhook sync). Should we build our own queue using a Cron Job polling the database, or deploy Apache Kafka / RabbitMQ?"*
+
+```text
+> 🟢 gemini-mode-argon [AUTO: architect] [high]
+
+### Argon [architect] Pre-Flight
+- Selective De-anchoring & Spectrum Check: Rejects false dichotomy; evaluates OSS/Headless alternatives.
+- Domain Boundaries & System Topology: Asynchronous Task Processing vs Event Streaming; idempotency & DLQ.
+- Multi-Dimensional Trade-off Matrix: Latency, DB connection exhaustion, cluster maintenance overhead.
+- Opinionated ADR Recommendation: Decisive roadmap recommendation tailored to current team scale.
+
+[Executive Verdict]
+For 95% of modern web applications, do not use Cron Job database polling, and do not jump prematurely to Apache Kafka. The battle-tested "Missing Middle" is a Redis-backed queue (BullMQ/Sidekiq/Celery) or PostgreSQL FOR UPDATE SKIP LOCKED.
+
+[The Hidden Iceberg]
+- Cron DB Polling: Causes race conditions, duplicate processing, and I/O thrashing on your primary OLTP database.
+- Apache Kafka: An event streaming commit log, not a background task queue (lacks native per-task retry/delay).
+
+[The Triad Comparison Matrix]
+| Evaluation Dimension | 1. Custom Cron + DB Polling | 2. The Missing Middle (Redis / SKIP LOCKED) | 3. Enterprise Broker (Kafka) |
+| Setup & Latency | Fragile, 1m+ delay | Near-instant (<10ms), hours to setup | Weeks of cluster configuration |
+| Production DB Load | High (lock contention & polling) | Zero (Redis) / Minimal (SKIP LOCKED) | Zero (isolated broker cluster) |
+| Built-in Queue Features | Manual retry/DLQ engineering | Native retry, exponential backoff, DLQ | Requires complex custom architecture |
+
+[Grounded DX Guidance]
+- Queue Isolation: Isolate CPU-bound image compression workers from latency-critical email queues.
+```
+
+---
+
+### 2. Surgical Engineering: Autonomous Terminal Auto-Healing (`engineer` | `high`)
+When fixing code or implementing features, the engine enforces strict read-before-write and autonomously iterates in the terminal until tests pass:
+
+> **User Prompt:** *"Fix the TypeError in auth refresh token middleware and make sure all tests pass."*
+
+```text
+> 🟢 gemini-mode-argon [AUTO: engineer] [high]
+
+### Argon [engineer] Pre-Flight
+- Target Scope & Blast Radius: auth/middleware.ts & token verification logic.
+- Invariants & System Contracts: Preserve JWT claims structure; handle null/expired refresh tokens gracefully.
+- Edge-Cases & Null Safety: Undefined authorization header, malformed token payload, token reuse detection.
+- Concrete Verification Test: CI=true npm test auth.test.ts.
+
+[Execution Flow]
+1. Reads auth/middleware.ts with read_file (preserves unrelated comments/docstrings).
+2. Applies surgical chunk edits using edit_file (zero placeholders).
+3. Executes terminal command: CI=true npm test auth.test.ts.
+4. Captures exit code and stderr: if assertions fail, autonomously refines code and re-runs.
+5. Reports complete solution only after achieving Exit Code 0.
+```
+
+---
+
+### 3. Fast Trivial Query: Zero Overhead (< 1s) (`general` | `low`)
+Casual or straightforward questions receive instant, natural responses without procedural bureaucracy:
+
+> **User Prompt:** *"How do I convert a string to an integer in Go?"*
+
+```text
+> 🟢 gemini-mode-argon [AUTO: general] [low]
+
+Use `strconv.Atoi` from the Go standard library:
+
+package main
+
+import (
+    "fmt"
+    "strconv"
+)
+
+func main() {
+    i, err := strconv.Atoi("42")
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(i) // 42
+}
+
+*(Zero Pre-Flight checklist overhead, immediate System 1 response).*
+```
 
 ---
 
