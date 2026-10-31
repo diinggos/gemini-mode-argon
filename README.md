@@ -16,6 +16,8 @@ A high-performance reasoning and operational engine for **Google Antigravity**, 
 * **Autonomous Auto-Role:** Automatically classifies user prompts to invoke the best engineering archetype on the fly.
 * **Pre-Flight Protocols:** Enforces a mandatory 4-point verification checklist before synthesizing solutions or mutating files.
 * **Terminal Auto-Healing (Level High):** Autonomously executes tests, captures runtime failures, and self-corrects until exit code 0.
+* **Universal Triad Pattern & 5-Block Architecture:** Instinctively maps the "Jalan Tengah" (Missing Middle) across all roles and delivers responses with native Argon's decisive 5-block structure.
+* **Frontier Fluid Rigor & Anti-Anchoring:** Selectively challenges false dichotomies gracefully with real-world DX empathy (database relations vs webhook sync, pricing cliffs).
 * **Zero Overhead on Trivial Tasks:** System 1 instant latency for casual questions, escalating to deep System 2 Chain-of-Thought for complex engineering.
 
 ---
@@ -101,9 +103,9 @@ Instead of enforcing a rigid, generic 4-point template across all domains, **`ge
 * **`devops` (4–5 pts):** Target Environment $\to$ Secret Safety & Permissions $\to$ Pipeline/Container Health $\to$ **Rollback Strategy** $\to$ Smoke Verification.
 * **`reviewer` (3–4 pts):** Audit Scope & Threat Surface $\to$ OWASP & Concurrency/Memory Risks $\to$ Blast Radius $\to$ Production Readiness Score.
 * **`tester` (3–4 pts):** Target Function $\to$ Equivalence Partitions & Boundaries $\to$ Fault Injection $\to$ Hermetic Mock Isolation.
-* **`architect` (3–4 pts):** Domain Boundaries & Topology $\to$ Trade-off Matrix & Non-Functional Req $\to$ Invariants $\to$ Architectural Decision (ADR).
+* **`architect` (3–4 pts):** Selective De-anchoring & Spectrum Check (if macro) $\to$ Domain Boundaries & System Topology $\to$ Multi-Dimensional Trade-off Matrix $\to$ Opinionated ADR Recommendation.
 * **`researcher` (3–4 pts):** Research Scope $\to$ Primary Source Trust Hierarchy $\to$ Deprecation & Version Drift $\to$ Grounded Evidence Check.
-* **`general` (3–4 pts):** Core Problem & Assumptions $\to$ Causal Mechanisms & Trade-offs $\to$ Second-Order Effects ("And then what?") $\to$ Decision Metric.
+* **`general` (3–4 pts):** Frame Invalidation & Hidden Assumptions $\to$ Orthogonal Solution Space $\to$ Causal Mechanisms $\to$ Decisive Recommendation.
 * **Casual / Trivial queries (`low`):** **Zero Pre-Flight** — instant, conversational responses with zero overhead.
 
 ---
