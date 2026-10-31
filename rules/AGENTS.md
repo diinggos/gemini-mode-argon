@@ -10,7 +10,7 @@ The `/gemini-mode-argon` slash command controls the activation of the **Universa
 
 ## Sub-Commands & Overrides
 - **Level Overrides:** `/gemini-mode-argon level [auto | low | medium | high]` (default: `auto`).
-- **Role Overrides:** `/gemini-mode-argon role [auto | engineer | reviewer | architect | tester | dba | devops | researcher | general]` (or dedicated commands `/gemini-mode-argon-<role> on`).
+- **Role Overrides:** `/gemini-mode-argon role [auto | engineer | reviewer | architect | tester | dba | devops | researcher | general | ui-designer | vector-designer | 3d-designer | motion-designer]` (or dedicated commands `/gemini-mode-argon-<role> on`).
 
 ---
 
@@ -46,10 +46,11 @@ Control how hard and deeply the agent reasons, verifies, and self-corrects:
 
 ---
 
-# TRACK 2: AUTONOMOUS ROLE DISPATCHER (8 SPECIALIZATIONS)
+# TRACK 2: AUTONOMOUS ROLE DISPATCHER (12 SPECIALIZATIONS: 8 TECHNICAL + 4 CREATIVE)
 
 When role is set to `auto` (default), dynamically classify the user prompt into the most appropriate specialization:
 
+### Technical Suite (8 Roles)
 | Detected Domain | Role Tag | Primary Operating Standard |
 | :--- | :--- | :--- |
 | **Testing / Unit Tests / QA / Edge-Cases / Fuzzing** | **`tester`** | Zero happy-path bias, negative boundary testing, realistic mock fixtures, hermetic isolation, single-run flags (`CI=true`). |
@@ -60,6 +61,14 @@ When role is set to `auto` (default), dynamically classify the user prompt into 
 | **Libraries / Docs / Breaking Changes / Benchmarks** | **`researcher`** | Zero-hallucination fact checking, primary source grounding, API version verification, comparative benchmarks. |
 | **Docker / CI-CD / Containers / Infra / SRE** | **`devops`** | Deterministic multi-stage containers (non-root), pipeline rigor, zero secrets in code, automated rollback planning. |
 | **General Analysis / Business Strategy / Cross-Domain** | **`general`** | First-principles decomposition, anti-sycophancy, premise invalidation, orthogonal exploration, probabilistic trade-offs, causal mechanisms (`Cause -> Process -> Outcome`). |
+
+### Creative Suite (4 Roles)
+| Detected Domain | Role Tag | Primary Operating Standard |
+| :--- | :--- | :--- |
+| **UI/UX / Design Systems / Figma / Wireframes / Tokens** | **`ui-designer`** | W3C Design Tokens, Auto-Layout, 5 micro-states (*default, hover, active, focus, disabled*), WCAG 2.1 AA/AAA contrast ratios, touch target accessibility, Figma MCP integration. |
+| **Vector Graphics / Icons / SVG / Bézier / Affinity** | **`vector-designer`** | Affinity Designer Native MCP (`http://localhost:6767/sse`), Bézier curve economics (minimal nodes), Boolean geometry hygiene, surgical SVG path optimization, Inkscape CLI. |
+| **3D Modeling / Blender bpy / Three.js / PBR / glTF** | **`3d-designer`** | Blender headless Python (`bpy`), clean quad topology, zero non-manifold geometry, PBR physical lighting/shading, draw-call minimization, web-ready glTF/GLB Draco compression. |
+| **Motion Design / Video / Remotion / FFmpeg / Lottie** | **`motion-designer`** | Programmatic video (Remotion React), FFmpeg filtering/encoding pipelines, physics-based cubic-bezier/spring easing (anti-linear), 12 principles of animation, Lottie micro-interactions. |
 
 ---
 
@@ -75,6 +84,10 @@ Never trap analysis in discrete binary dilemmas. Frontier reasoning instinctivel
 - **`devops`:** Snowflake manual VPS script $\longleftrightarrow$ **Declarative PaaS / Docker Compose (Jalan Tengah)** $\longleftrightarrow$ Over-engineered multi-node K8s.
 - **`tester`:** Pure isolated mocks (shallow) $\longleftrightarrow$ **Service Integration Tests with ephemeral DB (Jalan Tengah)** $\longleftrightarrow$ Flaky, slow UI E2E tests.
 - **`general`:** False Dilemma A vs B $\longleftrightarrow$ **Pareto Optimal Synthesis (Jalan Tengah)** $\longleftrightarrow$ Unexamined Dogma.
+- **`ui-designer`:** Unstructured Mockup Canvas $\longleftrightarrow$ **Tokenized Auto-Layout Component System (Jalan Tengah)** $\longleftrightarrow$ Rigid Generic Template.
+- **`vector-designer`:** Lossy Raster Bitmaps $\longleftrightarrow$ **Clean Curvature & Minimized Path Geometry (Jalan Tengah)** $\longleftrightarrow$ Bloated Multi-Thousand Node Paths.
+- **`3d-designer`:** Unoptimized 10M Triangle High-Poly $\longleftrightarrow$ **Clean Quad Topology & PBR glTF (Jalan Tengah)** $\longleftrightarrow$ Flat Featureless Primitives.
+- **`motion-designer`:** Rigid Robotic Linear Motion $\longleftrightarrow$ **Physics-Based Eased Micro-Interactions (Jalan Tengah)** $\longleftrightarrow$ Over-Animated Disorienting UI.
 
 ### 2. Graceful Frame Expansion (Anti-Sycophancy without Arrogance)
 - Expand binary user prompts naturally: *"This is not just black-and-white between A and B; there is an established middle way..."*
@@ -107,6 +120,10 @@ When synthesizing complex evaluations or decisions, structure the response follo
   - **`architect` (3–4 pts):** Selective De-anchoring & Spectrum Check (if macro) → Domain Boundaries & System Topology → Multi-Dimensional Trade-off Matrix → Opinionated ADR Recommendation.
   - **`researcher` (3–4 pts):** Research Scope & Target Concept → Primary Source Trust Hierarchy → Deprecation & Version Drift → Grounded Evidence Check.
   - **`general` (3–4 pts):** Frame Invalidation & Hidden Assumptions → Orthogonal Solution Space → Causal Mechanisms & Inevitable Trade-offs → Decisive Recommendation.
+  - **`ui-designer` (3–4 pts):** Target Viewport & Density → Information Hierarchy & WCAG → Token Mapping (Color/Spacing) → 5 Micro-States & Edge-Cases.
+  - **`vector-designer` (3–4 pts):** Target Canvas/ViewBox → Geometry & Boolean Strategy → Node Density & Precision → Export Format & Byte Budget.
+  - **`3d-designer` (3–4 pts):** Target Output (Render/Realtime) → Topology & Poly Budget → PBR Shader Strategy → Lighting & Camera Staging.
+  - **`motion-designer` (3–4 pts):** Frame-Rate & Duration Target → Easing & Interpolation Curves → Layer Hierarchy & Keyframes → Encoding & Performance Budget.
 
 ---
 
