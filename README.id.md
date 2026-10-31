@@ -16,6 +16,8 @@ Mesin operasional dan penalaran berkinerja tinggi untuk **Google Antigravity**, 
 * **Auto-Role Otonom:** Mengklasifikasikan prompt pengguna secara dinamis untuk menentukan arketipe rekayasa perangkat lunak terbaik secara instan.
 * **Protokol Pre-Flight 4-Poin:** Menjalankan checklist verifikasi wajib sebelum mensintesis solusi atau memodifikasi file kode.
 * **Terminal Auto-Healing (Level High):** Menjalankan pengujian di terminal secara mandiri, menangkap eror secara langsung, dan memperbaikinya sendiri secara berulang hingga mencapai exit code 0.
+* **Universal Triad Pattern & Arsitektur 5-Blok:** Secara naluriah memetakan "Jalan Tengah" (*The Missing Middle*) di semua peran dan menyajikan solusi dengan ritme 5-blok native Argon yang tegas dan terstruktur.
+* **Frontier Fluid Rigor & Anti-Anchoring:** Membongkar dikotomi biner secara anggun dengan empati developer nyata (relasi database lokal vs friksi sinkronisasi webhook, batas biaya MAU).
 * **Zero Overhead pada Tugas Ringan:** Respons System 1 instan (< 1 detik) untuk obrolan kasual, dan otomatis eskalasi ke System 2 (*Chain-of-Thought* mendalam) untuk rekayasa teknis yang rumit.
 
 ---
@@ -101,9 +103,9 @@ Alih-alih memaksakan 4-poin kaku seragam untuk seluruh domain, **`gemini-mode-ar
 * **`devops` (4–5 Poin):** Lingkup Lingkungan $\to$ Keamanan Secrets & Izin $\to$ Kesehatan Pipeline/Container $\to$ **Rencana Rollback** $\to$ Verifikasi Smoke Test.
 * **`reviewer` (3–4 Poin):** Batas Audit $\to$ Vektor Ancaman (OWASP/Race Condition) $\to$ Blast Radius $\to$ Skor Kesiapan Produksi (*Production Readiness Score*).
 * **`tester` (3–4 Poin):** Fungsi Target $\to$ Partisi Ekivalensi & Batas $\to$ Vektor Injeksi Kesalahan (*Fault Injection*) $\to$ Isolasi Hermetic Mock.
-* **`architect` (3–4 Poin):** Batas Domain & Topologi Sistem $\to$ Matriks Trade-off & Non-Functional Req $\to$ Invariants $\to$ Keputusan Arsitektur (ADR).
+* **`architect` (3–4 Poin):** De-anchoring Selektif & Cek Spektrum (jika makro) $\to$ Batas Domain & Topologi Sistem $\to$ Matriks Trade-off Multi-Dimensi $\to$ Rekomendasi ADR Berbobot (*Opinionated*).
 * **`researcher` (3–4 Poin):** Lingkup Riset $\to$ Hirarki Kepercayaan Sumber Primer $\to$ Depresi & Perubahan Versi $\to$ Verifikasi Bukti Ter-grounding.
-* **`general` (3–4 Poin):** Inti Masalah & Asumsi Tersembunyi $\to$ Mekanisme Kausal & Trade-off $\to$ Efek Tingkat Kedua (*"And then what?"*) $\to$ Metrik Keputusan.
+* **`general` (3–4 Poin):** Validasi Bingkai & Asumsi Tersembunyi $\to$ Ruang Solusi Ortogonal $\to$ Mekanisme Kausal $\to$ Rekomendasi Keputusan Tegas.
 * **Tugas Ringan / Kasual (`low`):** **Zero Pre-Flight** — langsung jawab instan dan ramah tanpa beban checklist.
 
 ---
