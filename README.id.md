@@ -92,14 +92,19 @@ Buka kembali Antigravity atau mulai percakapan baru. Sistem akan langsung mendet
 
 ---
 
-## 📋 Protokol Argon Pre-Flight
+## 📋 Protokol Adaptive Pre-Flight Berbasis Peran
 
-Setiap kali beroperasi pada level **medium**, **high**, atau tugas teknis berat di mode **auto**, agen akan mencetak checklist 4-poin sebelum memodifikasi kode atau menyajikan solusi:
+Alih-alih memaksakan 4-poin kaku seragam untuk seluruh domain, **`gemini-mode-argon`** menerapkan **Protokol Adaptive Pre-Flight (3–5 poin)** yang beradaptasi secara dinamis sesuai kebutuhan dan profil risiko spesifik dari peran yang sedang aktif:
 
-1. **Goal & Scope:** Tujuan teknis dan batas dampak perubahan (*blast radius*).
-2. **Key Variables & Invariants:** Dependensi utama, kontrak API, dan batasan sistem.
-3. **Risks & Edge Cases:** Mode kegagalan, *null-safety*, *race conditions*, atau potensi celah keamanan.
-4. **Validation Framework:** Perintah pengujian konkret, metrik evaluasi, atau pembuktian formal.
+* **`engineer` (3–4 Poin):** Scope & Blast Radius $\to$ Invariants & Kontrak Sistem $\to$ Edge-Cases & Null Safety $\to$ Tes Verifikasi Konkret.
+* **`dba` (4–5 Poin):** Target Query/DDL $\to$ Risiko Table Lock & Blast Radius $\to$ Strategi Indeks $\to$ **Rencana Rollback & Keamanan Data** $\to$ Validasi EXPLAIN.
+* **`devops` (4–5 Poin):** Lingkup Lingkungan $\to$ Keamanan Secrets & Izin $\to$ Kesehatan Pipeline/Container $\to$ **Rencana Rollback** $\to$ Verifikasi Smoke Test.
+* **`reviewer` (3–4 Poin):** Batas Audit $\to$ Vektor Ancaman (OWASP/Race Condition) $\to$ Blast Radius $\to$ Skor Kesiapan Produksi (*Production Readiness Score*).
+* **`tester` (3–4 Poin):** Fungsi Target $\to$ Partisi Ekivalensi & Batas $\to$ Vektor Injeksi Kesalahan (*Fault Injection*) $\to$ Isolasi Hermetic Mock.
+* **`architect` (3–4 Poin):** Batas Domain & Topologi Sistem $\to$ Matriks Trade-off & Non-Functional Req $\to$ Invariants $\to$ Keputusan Arsitektur (ADR).
+* **`researcher` (3–4 Poin):** Lingkup Riset $\to$ Hirarki Kepercayaan Sumber Primer $\to$ Depresi & Perubahan Versi $\to$ Verifikasi Bukti Ter-grounding.
+* **`general` (3–4 Poin):** Inti Masalah & Asumsi Tersembunyi $\to$ Mekanisme Kausal & Trade-off $\to$ Efek Tingkat Kedua (*"And then what?"*) $\to$ Metrik Keputusan.
+* **Tugas Ringan / Kasual (`low`):** **Zero Pre-Flight** — langsung jawab instan dan ramah tanpa beban checklist.
 
 ---
 
