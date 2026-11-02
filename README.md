@@ -12,7 +12,7 @@ A high-performance reasoning and operational engine for **Google Antigravity**, 
 
 ## 🌟 Highlights
 
-* **Two-Track Architecture:** Decouples **Reasoning Effort Calibration** (`low`, `medium`, `high`, `auto`) from **Specialized Role Dispatching** (8 technical domains).
+* **Two-Track Architecture:** Decouples **Reasoning Effort Calibration** (`low`, `medium`, `high`, `auto`) from **Specialized Role Dispatching** (13 domains across Technical, Creative, and Financial suites).
 * **Autonomous Auto-Role:** Automatically classifies user prompts to invoke the best engineering archetype on the fly.
 * **Pre-Flight Protocols:** Enforces a mandatory 4-point verification checklist before synthesizing solutions or mutating files.
 * **Terminal Auto-Healing (Level High):** Autonomously executes tests, captures runtime failures, and self-corrects until exit code 0.
@@ -45,6 +45,8 @@ A high-performance reasoning and operational engine for **Google Antigravity**, 
                                                │ • vector-des.: Affinity & SVG    │
                                                │ • 3d-designer: Blender & glTF    │
                                                │ • motion-des.: Video & Easing    │
+                                               ├──────────────────────────────────┤
+                                               │ • trader     : Sentinel & Quant  │
                                                └──────────────────────────────────┘
 ```
 
@@ -102,6 +104,8 @@ Restart Antigravity or open a new conversation. Antigravity will automatically d
   * `/gemini-mode-argon-vector-designer on`: Lock into Precision Vector & Affinity Designer mode.
   * `/gemini-mode-argon-3d-designer on`: Lock into 3D Artist & Blender bpy mode.
   * `/gemini-mode-argon-motion-designer on`: Lock into Motion Designer & Remotion/FFmpeg mode.
+* **Financial & Quantitative Suite:**
+  * `/gemini-mode-argon-trader on`: Lock into Principal Quantitative Strategist, AI Sentinel & Algorithmic Trading mode.
 
 ---
 
@@ -123,6 +127,7 @@ Instead of enforcing a rigid, generic 4-point template across all domains, **`ge
 | **`vector-designer`** | 3–4 | `1. Canvas/ViewBox Target` → `2. Geometry & Booleans` → `3. Node Density & Precision` → `4. Export & Byte Budget` | Affinity Designer MCP (`localhost:6767/sse`), Bézier curve economics, surgical SVG |
 | **`3d-designer`** | 3–4 | `1. Output Target (Web/Render)` → `2. Topology & Budget` → `3. PBR Shader Strategy` → `4. Lighting & Staging` | Blender `bpy` headless scripting, clean quad topology, PBR realism, glTF/GLB Draco |
 | **`motion-designer`** | 3–4 | `1. FPS & Duration Target` → `2. Easing & Interpolation` → `3. Layers & Keyframes` → `4. Performance Budget` | Remotion programmatic video, FFmpeg filtering, physics cubic-bezier easing, Lottie |
+| **`trader`** | 5 | `1. Sentinel DEFCON Status` → `2. Market Regime & Drivers` → `3. Weather & Lot Math` → `4. Microstructure & Confluence` → `5. Execution & Lifecycle` | Layer 0 AI Sentinel (DEFCON 1/3/5), deterministic lot sizing, MT5/Binance MCP, Auto-BE |
 
 > 💡 **Casual / Trivial Queries (`low`):** **Zero Pre-Flight** — instant, conversational responses with zero checklist overhead (< 1 sec).
 
@@ -290,7 +295,9 @@ Once registered, Antigravity automatically loads the new role upon next prompt:
 
 * **2-Strike Circuit Breaker:** Stops execution if any command or tool fails twice with the identical error, preventing infinite loops and prompting immediate strategy pivot.
 * **Non-Interactive Execution:** Enforces flags like `CI=true`, `--yes`, and `--watch=false` to prevent terminal hangs.
-* **Safety Gate:** Always requests explicit user confirmation prior to destructive file operations, database drops, git history rewrites, or billing-impacting actions.
+* **Strict Scope Confinement:** Confines execution strictly to the direct problem and local files requested by the user. Zero unilateral scope creep or unrequested actions.
+* **Mandatory Remote & Publishing Confirmation:** Strictly prohibits executing external publishing, remote repository creation (`gh repo create`), remote push (`git push`), package publishing (`npm publish`), or cloud deployments without explicit, interactive confirmation in chat immediately prior to execution—even if outlined in an approved plan.
+* **Destructive Operations Safety Gate:** Always requests explicit user confirmation prior to destructive file operations, database drops, git history rewrites (`git reset --hard`), or billing-impacting actions.
 
 ---
 
