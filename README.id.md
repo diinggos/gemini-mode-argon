@@ -12,7 +12,7 @@ Mesin operasional dan penalaran berkinerja tinggi untuk **Google Antigravity**, 
 
 ## 🌟 Fitur Utama
 
-* **Arsitektur Dua Jalur (Two-Track Architecture):** Memisahkan **Kalibrasi Tingkat Penalaran** (`low`, `medium`, `high`, `auto`) dari **Spesialisasi Peran** (8 domain teknis).
+* **Arsitektur Dua Jalur (Two-Track Architecture):** Memisahkan **Kalibrasi Tingkat Penalaran** (`low`, `medium`, `high`, `auto`) dari **Spesialisasi Peran** (13 domain lintas suite teknikal, kreatif, dan finansial).
 * **Auto-Role Otonom:** Mengklasifikasikan prompt pengguna secara dinamis untuk menentukan arketipe rekayasa perangkat lunak terbaik secara instan.
 * **Protokol Pre-Flight 4-Poin:** Menjalankan checklist verifikasi wajib sebelum mensintesis solusi atau memodifikasi file kode.
 * **Terminal Auto-Healing (Level High):** Menjalankan pengujian di terminal secara mandiri, menangkap eror secara langsung, dan memperbaikinya sendiri secara berulang hingga mencapai exit code 0.
@@ -45,6 +45,8 @@ Mesin operasional dan penalaran berkinerja tinggi untuk **Google Antigravity**, 
                                                │ • vector-des.: Affinity & SVG    │
                                                │ • 3d-designer: Blender & glTF    │
                                                │ • motion-des.: Video & Easing    │
+                                               ├──────────────────────────────────┤
+                                               │ • trader     : Sentinel & Quant  │
                                                └──────────────────────────────────┘
 ```
 
@@ -102,6 +104,8 @@ Buka kembali Antigravity atau mulai percakapan baru. Sistem akan langsung mendet
   * `/gemini-mode-argon-vector-designer on`: Kunci ke mode Precision Vector & Affinity Designer.
   * `/gemini-mode-argon-3d-designer on`: Kunci ke mode 3D Artist & Blender bpy.
   * `/gemini-mode-argon-motion-designer on`: Kunci ke mode Motion Designer & Remotion/FFmpeg.
+* **Suite Finansial & Kuantitatif:**
+  * `/gemini-mode-argon-trader on`: Kunci ke mode Principal Quantitative Strategist, AI Sentinel & Algorithmic Trading.
 
 ---
 
@@ -123,6 +127,7 @@ Alih-alih memaksakan 4-poin kaku seragam untuk seluruh domain, **`gemini-mode-ar
 | **`vector-designer`** | 3–4 | `1. Target Kanvas/ViewBox` → `2. Geometri & Operasi Boolean` → `3. Kerapatan & Presisi Node` → `4. Format & Budget Byte` | Affinity Designer MCP (`localhost:6767/sse`), Bézier curve economics, SVG presisi |
 | **`3d-designer`** | 3–4 | `1. Target Output (Web/Render)` → `2. Topologi & Budget Poli` → `3. Strategi Shader PBR` → `4. Pencahayaan & Staging` | Scripting headless Blender `bpy`, topologi quad bersih, realisme PBR, kompresi glTF Draco |
 | **`motion-designer`** | 3–4 | `1. Target FPS & Durasi` → `2. Kurva Easing & Interpolasi` → `3. Hierarki Layer & Keyframe` → `4. Budget Performa & Encoding` | Video programatis Remotion, pipeline FFmpeg, easing fisika cubic-bezier, animasi Lottie |
+| **`trader`** | 5 | `1. Status DEFCON Sentinel` → `2. Market Regime & Makro` → `3. Cuaca & Lot Math` → `4. Mikrostruktur & Confluence` → `5. Eksekusi & Lifecycle` | Layer 0 AI Sentinel (DEFCON 1/3/5), lot size deterministik Python, MT5/Binance MCP, Auto-BE |
 
 > 💡 **Tugas Ringan / Kasual (`low`):** **Zero Pre-Flight** — langsung jawab instan dan ramah tanpa beban checklist (< 1 detik).
 
