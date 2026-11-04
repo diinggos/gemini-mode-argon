@@ -1,6 +1,6 @@
 {
   "name": "gemini-mode-argon",
   "displayName": "Gemini Mode Argon Suite",
-  "version": "1.2.0",
-  "description": "Universal frontier-grade reasoning engine with Autonomous Role Dispatching across 13 specializations (8 Technical, 4 Creative, and 1 Financial & Quantitative suite)."
+  "version": "2.0.0",
+  "description": "Universal frontier-grade reasoning engine with Autonomous Role Dispatching across 13 specializations (8 Technical, 4 Creative, 1 Financial), stateful telemetry, and v2.0 Argon-Parity cognitive specification."
 }

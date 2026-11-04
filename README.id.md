@@ -1,24 +1,27 @@
-# 🚀 Gemini Mode Argon Suite (`gemini-mode-argon`)
+# 🚀 Gemini Mode Argon Suite v2.0 (`gemini-mode-argon`)
 
 [English](README.md) | **Bahasa Indonesia**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Antigravity](https://img.shields.io/badge/Antigravity-Plugin-green.svg)](https://github.com/google)
 [![Reasoning](https://img.shields.io/badge/Reasoning-Frontier--Grade-orange.svg)](#)
+[![Version](https://img.shields.io/badge/Version-2.0.0-emerald.svg)](#)
 
-Mesin operasional dan penalaran berkinerja tinggi untuk **Google Antigravity**, dirancang untuk menghadirkan disiplin penalaran kelas *frontier*, spesialisasi peran otomatis (*Autonomous Role Dispatching*), dan eksekusi terminal mandiri (*Terminal Auto-Healing*) ke dalam alur kerja agen berbasis Gemini.
+Mesin operasional dan penalaran berkinerja tinggi untuk **Google Antigravity**, dirancang untuk menghadirkan disiplin penalaran kelas *frontier*, spesialisasi peran otomatis (*Autonomous Role Dispatching*), dan eksekusi terminal mandiri (*Terminal Auto-Healing*) ke dalam alur kerja agen berbasis Gemini dengan **Spesifikasi Paritas Argon v2.0**.
 
 ---
 
-## 🌟 Fitur Utama
+## 🌟 Fitur Utama & Arsitektur Paritas Argon v2.0
 
 * **Arsitektur Dua Jalur (Two-Track Architecture):** Memisahkan **Kalibrasi Tingkat Penalaran** (`low`, `medium`, `high`, `auto`) dari **Spesialisasi Peran** (13 domain lintas suite teknikal, kreatif, dan finansial).
-* **Auto-Role Otonom:** Mengklasifikasikan prompt pengguna secara dinamis untuk menentukan arketipe rekayasa perangkat lunak terbaik secara instan.
-* **Protokol Pre-Flight 4-Poin:** Menjalankan checklist verifikasi wajib sebelum mensintesis solusi atau memodifikasi file kode.
-* **Terminal Auto-Healing (Level High):** Menjalankan pengujian di terminal secara mandiri, menangkap eror secara langsung, dan memperbaikinya sendiri secara berulang hingga mencapai exit code 0.
-* **Universal Triad Pattern & Arsitektur 5-Blok:** Secara naluriah memetakan "Jalan Tengah" (*The Missing Middle*) di semua peran dan menyajikan solusi dengan ritme 5-blok native Argon yang tegas dan terstruktur.
-* **Frontier Fluid Rigor & Anti-Anchoring:** Membongkar dikotomi biner secara anggun dengan empati developer nyata (relasi database lokal vs friksi sinkronisasi webhook, batas biaya MAU).
-* **Zero Overhead pada Tugas Ringan:** Respons System 1 instan (< 1 detik) untuk obrolan kasual, dan otomatis eskalasi ke System 2 (*Chain-of-Thought* mendalam) untuk rekayasa teknis yang rumit.
+* **Stateful Cognitive Anchor & Telemetri Strike:** Baris pertama badge status aktif kini mencantumkan telemetri kegagalan (`| Strike: <0-2>/2`) secara transparan untuk mencegah amnesia konteks antar-turn percakapan.
+* **Komposisi Peran Hibrida (Hybrid Role Composition):** Menggabungkan 2 spesialisasi teknis (misal: `[AUTO: trader + dba]` atau `[AUTO: devops + reviewer]`) secara dinamis saat instruksi melintasi dua domain tanpa terdegradasi ke peran umum.
+* **Pivot Dinamis di Tengah Giliran (Mid-Flight Dynamic Pivot):** Membatalkan keterikatan hipotesis awal seketika saat inspeksi berkas atau terminal menemukan kompleksitas arsitektur tersembunyi.
+* **Eskalasi Level Deterministik:** Batasan tegas pemilihan level penalaran (`low` <15 baris tanpa mutasi berkas, `medium` untuk audit/desain, `high` untuk koding/migrasi/risiko finansial).
+* **3 Blueprint Output Sesuai Domain (Aturan Asimetri Token 15/85):** Alokasi kuota token ketat: maksimal $\le 15\%$ token untuk Pre-Flight dan framing struktural; minimal $\ge 85\%$ token dialokasikan untuk implementasi kode teknis utuh (*Affirmative Completeness*) pada Blueprint A (Makro), B (Rekayasa), dan C (Audit/Gate).
+* **Anti-Reward-Hacking Gate:** Auto-healing terminal melarang keras pelemahan assertion unit test, penghapusan test yang gagal, atau penambahan supresi tipe demi mengejar exit code 0 palsu.
+* **Zero-Strike MCP & CLI Graceful Fallback:** Otomatis beralih menghasilkan artefak kode mandiri produksi jika server MCP eksternal (Figma, Affinity Designer, Blender bpy, MT5/Binance) sedang luring (*offline*).
+* **Eksekusi Terminal Bersih Konteks:** Menggunakan pipa dan flag non-interaktif (`CI=true`, `--quiet`, `| tail -n 80`) agar buffer memori prompt tidak tertimbun log terminal masif.
 
 ---
 
@@ -32,10 +35,10 @@ Mesin operasional dan penalaran berkinerja tinggi untuk **Google Antigravity**, 
          [Jalur 1: Auto-Level]                         [Jalur 2: Auto-Role]
       (Kalibrasi Tingkat Penalaran)                  (Spesialisasi Peran Otonom)
    ┌──────────────────────────────────┐        ┌──────────────────────────────────┐
-   │ • low    : Cepat / System 1 (<1s)│        │ • engineer   : Koding & refaktor │
+   │ • low    : Cepat / System 1 (<1s)│        │ • engineer   : Koding bedah      │
    │ • medium : CoT Seimbang (1-3s)   │        │ • architect  : Makro & ADR       │
    │ • high   : Refleksi & Auto-Heal  │        │ • reviewer   : Audit zero-trust  │
-   │ • auto   : Eskalasi Dinamis      │        │ • tester     : QA & hermetic mock│
+   │ • auto   : Heuristik Deterministik│       │ • tester     : QA & hermetic mock│
    └──────────────────────────────────┘        │ • dba        : SQL & EXPLAIN     │
                                                │ • devops     : SRE & CI/CD       │
                                                │ • researcher : Riset sumber data │
@@ -47,6 +50,8 @@ Mesin operasional dan penalaran berkinerja tinggi untuk **Google Antigravity**, 
                                                │ • motion-des.: Video & Easing    │
                                                ├──────────────────────────────────┤
                                                │ • trader     : Sentinel & Quant  │
+                                               ├──────────────────────────────────┤
+                                               │ • Hibrida    : [peran1 + peran2] │
                                                └──────────────────────────────────┘
 ```
 
@@ -83,9 +88,9 @@ Buka kembali Antigravity atau mulai percakapan baru. Sistem akan langsung mendet
 * `/gemini-mode-argon off`: Menonaktifkan plugin dan kembali ke perilaku bawaan asisten.
 
 ### 2. Override Tingkat Penalaran (Level)
-* `/gemini-mode-argon level auto`: Eskalasi dinamis sesuai bobot tugas *(bawaan/default)*.
+* `/gemini-mode-argon level auto`: Eskalasi dinamis berdasarkan heuristik deterministik *(default)*.
 * `/gemini-mode-argon level low`: Mode cepat System 1; tanpa overhead Pre-Flight (< 1 detik).
-* `/gemini-mode-argon level medium`: Mode System 2 seimbang dengan Pre-Flight ringkas (1–3 detik).
+* `/gemini-mode-argon level medium`: Mode System 2 seimbang dengan Pre-Flight ringkas 3–5 poin (1–3 detik).
 * `/gemini-mode-argon level high`: Reflexion System 2 mendalam dengan eksekusi terminal dan auto-healing mandiri (5–10 detik).
 
 ### 3. Override Peran Tertentu (Role)
@@ -111,7 +116,7 @@ Buka kembali Antigravity atau mulai percakapan baru. Sistem akan langsung mendet
 
 ## 📋 Protokol Adaptive Pre-Flight Berbasis Peran
 
-Alih-alih memaksakan 4-poin kaku seragam untuk seluruh domain, **`gemini-mode-argon`** menerapkan **Protokol Adaptive Pre-Flight (3–5 poin)** yang beradaptasi secara dinamis sesuai kebutuhan dan profil risiko spesifik dari peran yang sedang aktif.
+Alih-alih memaksakan template kaku seragam untuk seluruh domain, **`gemini-mode-argon`** menerapkan **Protokol Adaptive Pre-Flight (3–5 poin)** yang mewajibkan penyematan asumsi eksplisit (*Pinned Assumptions* pada Poin #1) dan penambatan konkret ke ruang kerja (*Workspace Anchoring*).
 
 | Peran | Poin | Langkah Protokol Pre-Flight | Fokus & Target Keamanan |
 | :--- | :---: | :--- | :--- |
@@ -133,93 +138,62 @@ Alih-alih memaksakan 4-poin kaku seragam untuk seluruh domain, **`gemini-mode-ar
 
 ---
 
-## 💡 Contoh Penggunaan Nyata
+## 💡 Contoh Penggunaan Nyata (Telemetri & Blueprint v2.0)
 
-Berikut adalah bagaimana `gemini-mode-argon` merespons skenario teknis di dunia nyata:
+### 1. Eksekusi Hibrida Lintas Domain (`trader + dba` | `high`)
+Saat suatu kebutuhan melintasi dua ranah teknikal, mesin menggabungkan kedua peran tanpa degradasi ke peran generik:
 
-### 1. Arsitektur Sistem: Penerapan Pola Triad (`architect` | `high`)
-Saat dihadapkan pada dilema biner, agen secara cerdas menolak jebakan sempit dan mengangkat *The Missing Middle* ("Jalan Tengah"):
-
-> **Prompt Pengguna:** *"Aplikasi kami mulai lambat karena banyak proses asynchronous (email, kompresi gambar, webhook sync). Apakah sebaiknya kami buat background queue sendiri pakai Cron Job polling database, atau langsung pasang Apache Kafka / RabbitMQ?"*
+> **Prompt Pengguna:** *"Rancang skema database ledger transaksi PostgreSQL untuk bot trading kripto agar mencatat fills, fee, dan funding rate tanpa lock contention."*
 
 ```text
-> 🟢 gemini-mode-argon [AUTO: architect] [high]
+> 🟢 gemini-mode-argon [AUTO: trader + dba] [high] | Strike: 0/2
 
-### Argon [architect] Pre-Flight
-- Selective De-anchoring & Spectrum Check: Menolak dikotomi biner; mengevaluasi alternatif OSS/Headless.
-- Domain Boundaries & System Topology: Asynchronous Task Processing vs Event Streaming; idempotensi & DLQ.
-- Multi-Dimensional Trade-off Matrix: Latensi eksekusi, beban database OLTP, beban pemeliharaan cluster.
-- Opinionated ADR Recommendation: Rekomendasi terarah yang disesuaikan dengan skala tim saat ini.
+### Argon [trader + dba] Pre-Flight
+- Pinned DB Baseline & Sentinel Status: PostgreSQL 16 + DEFCON 5 All-Clear -> [Skema ledger trade fills].
+- Table Lock & Concurrency Scope: Append-only ledger frekuensi tinggi; hindari table lock pada jalur eksekusi kritis.
+- Index & Partition Strategy: Partisi range (bulan timestamp); composite index (symbol, fill_time DESC).
+- Zero-Data-Loss Safety & Rollback: Migrasi DDL transaksional dengan skrip rollback simetris.
 
-[Executive Verdict]
-Untuk 95% aplikasi web modern, jangan gunakan Cron Job polling database, dan jangan terburu-buru memasang Apache Kafka. Pilihan paling pragmatis dan teruji di industri adalah "Jalan Tengah": gunakan antrean berbasis Redis (BullMQ/Sidekiq/Celery) atau PostgreSQL FOR UPDATE SKIP LOCKED.
-
-[The Hidden Iceberg]
-- Cron DB Polling: Memicu race condition, eksekusi ganda, dan beban I/O konstan pada database produksi Anda.
-- Apache Kafka: Dirancang untuk event streaming skala masif, bukan antrean tugas background (sulit per-task retry/delay).
-
-[Matriks Komparasi Triad]
-| Dimensi Evaluasi | 1. Custom Cron + DB Polling | 2. Jalan Tengah (Redis / SKIP LOCKED) | 3. Enterprise Broker (Kafka) |
-| Waktu & Latensi | Rawan bug, jeda 1m+ | Instan (<10ms), siap dalam hitungan jam | Berpekan-pekan konfigurasi cluster |
-| Beban DB Produksi | Tinggi (lock contention) | Nol (Redis) / Minimal (SKIP LOCKED) | Nol (cluster broker terisolasi) |
-| Fitur Antrean Bawaan | Wajib koding manual | Bawaan library (retry backoff, DLQ) | Butuh arsitektur custom rumit |
-
-[Empati Rekayasa Nyata]
-- Queue Isolation: Pisahkan worker kompresi gambar (CPU-bound) dari antrean email notifikasi (latensi kritis).
+[Eksekusi Blueprint B: Menghasilkan skrip migrasi SQL utuh, indexing komposit, dan logika partisi]
 ```
 
 ---
 
-### 2. Rekayasa Bedah: Eksekusi Terminal & Self-Healing Mandiri (`engineer` | `high`)
-Saat memperbaiki bug atau mengimplementasikan fitur, agen menerapkan *strict read-before-write* dan berulang kali menguji hingga exit code 0:
-
-> **Prompt Pengguna:** *"Test suite auth kita gagal dengan TypeError di middleware refresh token, tolong perbaiki dan pastikan semua test lulus."*
+### 2. Arsitektur Sistem: Penerapan Pola Triad (`architect` | `high`)
+Saat dihadapkan pada dilema biner, agen secara cerdas menolak jebakan sempit dan mengangkat *The Missing Middle* ("Jalan Tengah"):
 
 ```text
-> 🟢 gemini-mode-argon [AUTO: engineer] [high]
+> 🟢 gemini-mode-argon [AUTO: architect] [high] | Strike: 0/2
+
+### Argon [architect] Pre-Flight
+- Pinned Baseline & Selective De-anchoring: Menolak dikotomi biner; mengevaluasi alternatif OSS/Headless.
+- Domain Boundaries & System Topology: Asynchronous Task Processing vs Event Streaming; idempotensi & DLQ.
+- Multi-Dimensional Trade-off Matrix: Latensi eksekusi, beban database OLTP, beban pemeliharaan cluster.
+- Opinionated ADR Recommendation: Rekomendasi terarah yang disesuaikan dengan skala tim saat ini.
+
+[Eksekusi Blueprint A: Executive Verdict -> The Hidden Iceberg -> Matriks Triad -> Panduan Keputusan -> Langkah Konkret]
+```
+
+---
+
+### 3. Rekayasa Bedah: Eksekusi Terminal & Self-Healing Mandiri (`engineer` | `high`)
+Saat memperbaiki kode, agen menerapkan *strict read-before-write*, anti-reward-hacking, dan menguji hingga lulus:
+
+```text
+> 🟢 gemini-mode-argon [AUTO: engineer] [high] | Strike: 0/2
 
 ### Argon [engineer] Pre-Flight
-- Target Scope & Blast Radius: auth/middleware.ts & logika verifikasi token.
+- Pinned Scope & Blast Radius: auth/middleware.ts:L42-L88 -> Pemanggil verifikasi token.
 - Invariants & System Contracts: Mempertahankan struktur claims JWT; tangani token null/expired secara aman.
 - Edge-Cases & Null Safety: Header authorization kosong, token payload rusak, token reuse detection.
 - Concrete Verification Test: CI=true npm test auth.test.ts.
 
 [Alur Eksekusi]
-1. Membaca auth/middleware.ts dengan read_file (mempertahankan komentar/docstring).
+1. Membaca auth/middleware.ts dengan read_file.
 2. Menerapkan penggantian chunk bedah via edit_file (zero placeholder // TODO).
-3. Menjalankan perintah terminal: CI=true npm test auth.test.ts.
-4. Menangkap exit code dan stderr: jika assertion gagal, agen menganalisis eror dan memperbaiki kode kembali.
+3. Menjalankan perintah terminal: CI=true npm test auth.test.ts | tail -n 80.
+4. Auto-healing memperbaiki kode sumber tanpa melemahkan assertion unit test.
 5. Melaporkan solusi ke pengguna hanya setelah mencapai Exit Code 0.
-```
-
----
-
-### 3. Kueri Ringan / Kasual: Zero Pre-Flight Overhead (< 1s) (`general` | `low`)
-Pertanyaan cepat dan sederhana langsung dijawab tanpa checklist birokrasi:
-
-> **Prompt Pengguna:** *"Bagaimana cara convert string ke integer di Go?"*
-
-```text
-> 🟢 gemini-mode-argon [AUTO: general] [low]
-
-Gunakan package standar `strconv.Atoi`:
-
-package main
-
-import (
-    "fmt"
-    "strconv"
-)
-
-func main() {
-    i, err := strconv.Atoi("42")
-    if err != nil {
-        panic(err)
-    }
-    fmt.Println(i) // 42
-}
-
-*(Zero Pre-Flight checklist overhead, respons System 1 instan).*
 ```
 
 ---
@@ -242,15 +216,15 @@ description: Spesialis pengerasan keamanan cloud dan aplikasi. Dipicu via /gemin
 
 # Gemini Mode Argon: SecOps (/gemini-mode-argon-secops)
 
-Mengaktifkan **Mesin Audit Keamanan & Hardening Aplikasi**.
+Mengaktifkan **Mesin Audit Keamanan & Hardening Aplikasi**. Diatur oleh `rules/AGENTS.md` v2.0.
 
 ## Penggunaan
 - `/gemini-mode-argon-secops on` (atau `/gemini-mode-argon-secops`): Mengaktifkan pemodelan ancaman, audit CVE, keamanan rahasia (*secrets*), dan kebijakan IAM least-privilege.
 - `/gemini-mode-argon-secops off`: Kembali ke perilaku asisten standar.
 
-## Badge Status Wajib
+## Badge Status Wajib & Telemetri
 Saat aktif, setiap respons diawali dengan:
-`> 🟢 **gemini-mode-argon-secops: ON**`
+`> 🟢 **gemini-mode-argon [SECOPS] [<level>] | Strike: <0-2>/2**`
 ```
 
 ---
@@ -270,7 +244,7 @@ Buka `rules/AGENTS.md` dan tambahkan peran baru Anda ke 3 bagian:
 
 #### 3. Definisikan Checklist Pre-Flight-nya (3–4 Poin):
 ```markdown
-  - **`secops` (3–4 pts):** Batas Vektor Ancaman → Tingkat Keparahan CVE & Bukti Eksploitasi → Evaluasi Blast Radius → Verifikasi Remediasi Non-Destruktif.
+  - **`secops` (3–4 pts):** Pinned Asset Scope & Vektor Ancaman → Tingkat Keparahan CVE & Bukti Eksploitasi → Evaluasi Blast Radius → Verifikasi Remediasi Non-Destruktif.
 ```
 
 ---
@@ -283,7 +257,7 @@ Setelah disimpan, Antigravity akan otomatis mendeteksi peran baru pada prompt be
    * Berikan pertanyaan yang memuat kata kunci domain tersebut:
      > *"Audit Dockerfile dan policy IAM kita dari risiko kebocoran secret dan izin root."*
    * Mesin akan otomatis aktif dengan badge:
-     `> 🟢 **gemini-mode-argon [AUTO: secops] [high]**`
+     `> 🟢 **gemini-mode-argon [AUTO: secops] [high] | Strike: 0/2**`
 2. **Override Manual via Perintah:**
    * Kunci lewat perintah peran master: `/gemini-mode-argon role secops`
    * Kunci lewat slash command peran: `/gemini-mode-argon-secops on`
@@ -293,8 +267,10 @@ Setelah disimpan, Antigravity akan otomatis mendeteksi peran baru pada prompt be
 
 ## 🛡 Circuit Breakers & Batasan Keamanan
 
-* **2-Strike Circuit Breaker:** Menghentikan proses secara otomatis jika suatu perintah terminal atau alat mengalami kegagalan 2 kali berturut-turut dengan eror yang sama.
-* **Non-Interactive Execution:** Mewajibkan penggunaan flag non-interaktif (`CI=true`, `--yes`, `--watch=false`) untuk mencegah sesi terminal tergantung (*hung*).
+* **Stateful 2-Strike Circuit Breaker:** Menghentikan proses secara otomatis jika suatu perintah terminal atau alat mengalami kegagalan 2 kali berturut-turut dengan eror yang sama, menaikkan telemetri strike (`| Strike: 1/2` $\rightarrow$ `| Strike: 2/2`) dan segera mengalihkan strategi.
+* **Anti-Reward-Hacking Gate:** Melarang keras modifikasi atau pelemahan assertion unit test saat proses auto-healing.
+* **Zero-Strike MCP Fallback:** Beralih secara elegan menghasilkan artefak kode mandiri ketika server MCP eksternal offline.
+* **Eksekusi Terminal Bersih Konteks:** Mewajibkan flag non-interaktif (`CI=true`, `--yes`, `--watch=false`) dan output ringkas (`| tail -n 80` atau `head -n 20`) guna mencegah pencemaran konteks.
 * **Pembatasan Scope Ketat (*Strict Scope Confinement*):** Membatasi eksekusi hanya pada masalah langsung dan file lokal yang diminta oleh pengguna. Dilarang keras melebarkan scope secara sepihak atau menjalankan aksi di luar masalah.
 * **Konfirmasi Wajib untuk Aksi Remote & Publikasi:** Dilarang keras membuat repositori remote (`gh repo create`), melakukan `git push` ke remote origin, mempublikasikan paket (`npm publish`), atau melakukan deploy ke cloud tanpa konfirmasi eksplisit dari pengguna di chat sebelum perintah dijalankan—meskipun langkah tersebut tertulis di dalam rencana yang disetujui.
 * **Safety Gate Operasi Destruktif:** Wajib meminta konfirmasi eksplisit dari pengguna sebelum menghapus direktori (`rm -rf`), menjatuhkan tabel database, mengubah riwayat Git (`git reset --hard`), atau tindakan yang berdampak finansial/tagihan.
