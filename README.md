@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Antigravity](https://img.shields.io/badge/Antigravity-Plugin-green.svg)](https://github.com/google)
 [![Reasoning](https://img.shields.io/badge/Reasoning-Frontier--Grade-orange.svg)](#)
-[![Version](https://img.shields.io/badge/Version-2.0.0-emerald.svg)](#)
+[![Version](https://img.shields.io/badge/Version-2.1.0-emerald.svg)](#)
 
 A high-performance reasoning and operational engine for **Google Antigravity**, designed to bring frontier-grade reasoning discipline, autonomous role specialization, and self-healing terminal execution to Gemini-powered agent workflows with **v2.0 Argon-Parity Specification**.
 
@@ -86,6 +86,7 @@ Restart Antigravity or open a new conversation. Antigravity will automatically d
 ### 1. Master Control
 * `/gemini-mode-argon on` (or `/gemini-mode-argon`): Activates Full-Auto Mode (Auto-Role + Auto-Level).
 * `/gemini-mode-argon off`: Deactivates the suite and returns to default agent behavior.
+* `/gemini-mode-argon token-saver [on|off]`: Toggles zero-prose output mode (`| token-saver: ON`), emitting strictly the Pre-Flight checklist and complete production code.
 
 ### 2. Reasoning Level Overrides
 * `/gemini-mode-argon level auto`: Dynamic escalation based on deterministic heuristics *(default)*.

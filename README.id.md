@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Antigravity](https://img.shields.io/badge/Antigravity-Plugin-green.svg)](https://github.com/google)
 [![Reasoning](https://img.shields.io/badge/Reasoning-Frontier--Grade-orange.svg)](#)
-[![Version](https://img.shields.io/badge/Version-2.0.0-emerald.svg)](#)
+[![Version](https://img.shields.io/badge/Version-2.1.0-emerald.svg)](#)
 
 Mesin operasional dan penalaran berkinerja tinggi untuk **Google Antigravity**, dirancang untuk menghadirkan disiplin penalaran kelas *frontier*, spesialisasi peran otomatis (*Autonomous Role Dispatching*), dan eksekusi terminal mandiri (*Terminal Auto-Healing*) ke dalam alur kerja agen berbasis Gemini dengan **Spesifikasi Paritas Argon v2.0**.
 
@@ -86,6 +86,7 @@ Buka kembali Antigravity atau mulai percakapan baru. Sistem akan langsung mendet
 ### 1. Kontrol Utama
 * `/gemini-mode-argon on` (atau cukup `/gemini-mode-argon`): Mengaktifkan Full-Auto Mode (*Auto-Role* + *Auto-Level*).
 * `/gemini-mode-argon off`: Menonaktifkan plugin dan kembali ke perilaku bawaan asisten.
+* `/gemini-mode-argon token-saver [on|off]`: Mengaktifkan/menonaktifkan mode hemat token tanpa basa-basi (`| token-saver: ON`), hanya mengeluarkan checklist Pre-Flight dan kode produksi utuh.
 
 ### 2. Override Tingkat Penalaran (Level)
 * `/gemini-mode-argon level auto`: Eskalasi dinamis berdasarkan heuristik deterministik *(default)*.

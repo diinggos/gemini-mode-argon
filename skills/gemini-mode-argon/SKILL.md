@@ -23,6 +23,7 @@ Controls the activation of the **Universal Frontier Reasoning Engine** featuring
   - `high`: Maximum reasoning effort with Reflexion self-correction and mandatory terminal auto-healing (5–10 sec).
   - `auto`: Restore dynamic automatic level escalation.
 - `/gemini-mode-argon role [auto | engineer | reviewer | architect | tester | dba | devops | researcher | general | ui-designer | vector-designer | 3d-designer | motion-designer | trader]`: Lock the specialist role manually.
+- `/gemini-mode-argon token-saver [on | off]`: Toggle zero-prose token conservation mode (appends `| **token-saver: ON**` to the active status badge and outputs strictly the Pre-Flight checklist, unabridged code/artifacts, and verification proof).
 
 ## Mandatory Active Status Badge & Stateful Telemetry
 Whenever active, every response begins with the combined active status badge and strike telemetry:
