@@ -1,24 +1,27 @@
-# 🚀 Gemini Mode Argon Suite (`gemini-mode-argon`)
+# 🚀 Gemini Mode Argon Suite v2.0 (`gemini-mode-argon`)
 
 **English** | [Bahasa Indonesia](README.id.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Antigravity](https://img.shields.io/badge/Antigravity-Plugin-green.svg)](https://github.com/google)
 [![Reasoning](https://img.shields.io/badge/Reasoning-Frontier--Grade-orange.svg)](#)
+[![Version](https://img.shields.io/badge/Version-2.0.0-emerald.svg)](#)
 
-A high-performance reasoning and operational engine for **Google Antigravity**, designed to bring frontier-grade reasoning discipline, autonomous role specialization, and self-healing terminal execution to Gemini-powered agent workflows.
+A high-performance reasoning and operational engine for **Google Antigravity**, designed to bring frontier-grade reasoning discipline, autonomous role specialization, and self-healing terminal execution to Gemini-powered agent workflows with **v2.0 Argon-Parity Specification**.
 
 ---
 
-## 🌟 Highlights
+## 🌟 Highlights & v2.0 Argon-Parity Architecture
 
 * **Two-Track Architecture:** Decouples **Reasoning Effort Calibration** (`low`, `medium`, `high`, `auto`) from **Specialized Role Dispatching** (13 domains across Technical, Creative, and Financial suites).
-* **Autonomous Auto-Role:** Automatically classifies user prompts to invoke the best engineering archetype on the fly.
-* **Pre-Flight Protocols:** Enforces a mandatory 4-point verification checklist before synthesizing solutions or mutating files.
-* **Terminal Auto-Healing (Level High):** Autonomously executes tests, captures runtime failures, and self-corrects until exit code 0.
-* **Universal Triad Pattern & 5-Block Architecture:** Instinctively maps the "Jalan Tengah" (Missing Middle) across all roles and delivers responses with native Argon's decisive 5-block structure.
-* **Frontier Fluid Rigor & Anti-Anchoring:** Selectively challenges false dichotomies gracefully with real-world DX empathy (database relations vs webhook sync, pricing cliffs).
-* **Zero Overhead on Trivial Tasks:** System 1 instant latency for casual questions, escalating to deep System 2 Chain-of-Thought for complex engineering.
+* **Stateful Cognitive Anchor & Telemetry:** Line 1 active status badge includes live strike telemetry (`| Strike: <0-2>/2`) to prevent context drift and strike amnesia across conversation turns.
+* **Multi-Domain Hybrid Role Composition:** Blends dual specialties (e.g. `[AUTO: trader + dba]` or `[AUTO: devops + reviewer]`) when prompts span multiple domains instead of degrading to generic behavior.
+* **Mid-Flight Dynamic Pivot:** Unanchors from initial assumptions when file inspection or terminal output uncovers deeper system complexity mid-turn.
+* **Deterministic Auto-Level Escalation:** Rigorous deterministic boundaries guarantee appropriate level selection (`low` <15 lines with 0 mutations, `medium` audits/designs, `high` code/migrations/quant).
+* **3 Domain-Matched Output Blueprints (15/85 Token Rule):** Strict token budget allocation allocating $\le 15\%$ to Pre-Flight framing and $\ge 85\%$ to complete, unabridged technical implementation across Blueprints A (Macro), B (Engineering), and C (Audit/Gate).
+* **Anti-Reward-Hacking Gate:** Terminal auto-healing strictly prohibits weakening test assertions, deleting failing tests, or suppressing types to fake passing builds.
+* **Zero-Strike MCP & CLI Graceful Fallback:** Automatically pivots to complete standalone code artifacts if external MCP servers (Figma, Affinity Designer, Blender bpy, MT5/Binance) are offline.
+* **Context-Clean Terminal Execution:** Pipes and flags (`CI=true`, `--quiet`, `| tail -n 80`) protect context hygiene against massive log blowouts.
 
 ---
 
@@ -35,7 +38,7 @@ A high-performance reasoning and operational engine for **Google Antigravity**, 
    │ • low    : Fast / System 1 (<1s) │        │ • engineer   : Surgical coding   │
    │ • medium : Balanced CoT (1-3s)   │        │ • architect  : Macro & ADRs      │
    │ • high   : Reflexion & Healing   │        │ • reviewer   : Zero-trust audit  │
-   │ • auto   : Dynamic Escalation    │        │ • tester     : QA & hermetic mock│
+   │ • auto   : Deterministic Heuristic│       │ • tester     : QA & hermetic mock│
    └──────────────────────────────────┘        │ • dba        : SQL & EXPLAIN     │
                                                │ • devops     : SRE & CI/CD       │
                                                │ • researcher : Grounded facts    │
@@ -47,6 +50,8 @@ A high-performance reasoning and operational engine for **Google Antigravity**, 
                                                │ • motion-des.: Video & Easing    │
                                                ├──────────────────────────────────┤
                                                │ • trader     : Sentinel & Quant  │
+                                               ├──────────────────────────────────┤
+                                               │ • Hybrid     : [role1 + role2]   │
                                                └──────────────────────────────────┘
 ```
 
@@ -83,9 +88,9 @@ Restart Antigravity or open a new conversation. Antigravity will automatically d
 * `/gemini-mode-argon off`: Deactivates the suite and returns to default agent behavior.
 
 ### 2. Reasoning Level Overrides
-* `/gemini-mode-argon level auto`: Dynamic escalation based on task complexity *(default)*.
+* `/gemini-mode-argon level auto`: Dynamic escalation based on deterministic heuristics *(default)*.
 * `/gemini-mode-argon level low`: Fast System 1 mode; zero Pre-Flight overhead (< 1s).
-* `/gemini-mode-argon level medium`: Balanced System 2 CoT with compact 4-point Pre-Flight (1–3s).
+* `/gemini-mode-argon level medium`: Balanced System 2 CoT with compact 3–5 point Pre-Flight (1–3s).
 * `/gemini-mode-argon level high`: Deep multi-pass reflexion with mandatory terminal auto-healing (5–10s).
 
 ### 3. Dedicated Role Overrides
@@ -111,7 +116,7 @@ Restart Antigravity or open a new conversation. Antigravity will automatically d
 
 ## 📋 The Role-Native Adaptive Pre-Flight Protocol
 
-Instead of enforcing a rigid, generic 4-point template across all domains, **`gemini-mode-argon`** implements a **Role-Native Adaptive Pre-Flight Protocol (3–5 points)** that dynamically tailors its verification checklist to the exact domain and risk profile of the active role.
+Instead of enforcing a rigid, generic template across all domains, **`gemini-mode-argon`** implements a **Role-Native Adaptive Pre-Flight Protocol (3–5 points)** enforcing Pinned Assumptions (Bullet #1) and Concrete Workspace Anchoring.
 
 | Role | Points | Tailored Pre-Flight Protocol Steps | Focus & Safety Objective |
 | :--- | :---: | :--- | :--- |
@@ -133,93 +138,62 @@ Instead of enforcing a rigid, generic 4-point template across all domains, **`ge
 
 ---
 
-## 💡 Real-World Examples in Action
+## 💡 Real-World Examples in Action (v2.0 Telemetry & Blueprints)
 
-Here is how `gemini-mode-argon` behaves across real engineering and architectural tasks:
+### 1. Hybrid Multi-Domain Execution (`trader + dba` | `high`)
+When a task crosses two technical domains, the engine composes both roles without falling back to generic behavior:
 
-### 1. Systems Architecture: The Universal Triad Pattern (`architect` | `high`)
-When presented with a binary dilemma, the engine avoids simplistic trade-offs and surfaces the *Missing Middle*:
-
-> **User Prompt:** *"Our app is getting slow due to background tasks (emails, image processing, webhook sync). Should we build our own queue using a Cron Job polling the database, or deploy Apache Kafka / RabbitMQ?"*
+> **User Prompt:** *"Design a PostgreSQL audit ledger schema for our crypto trading bot to record execution fills, fees, and funding rates with zero lock contention."*
 
 ```text
-> 🟢 gemini-mode-argon [AUTO: architect] [high]
+> 🟢 gemini-mode-argon [AUTO: trader + dba] [high] | Strike: 0/2
 
-### Argon [architect] Pre-Flight
-- Selective De-anchoring & Spectrum Check: Rejects false dichotomy; evaluates OSS/Headless alternatives.
-- Domain Boundaries & System Topology: Asynchronous Task Processing vs Event Streaming; idempotency & DLQ.
-- Multi-Dimensional Trade-off Matrix: Latency, DB connection exhaustion, cluster maintenance overhead.
-- Opinionated ADR Recommendation: Decisive roadmap recommendation tailored to current team scale.
+### Argon [trader + dba] Pre-Flight
+- Pinned DB Baseline & Sentinel Status: PostgreSQL 16 + DEFCON 5 All-Clear -> [Ledger schema for trade fills].
+- Table Lock & Concurrency Scope: High-frequency append-only ledger; avoid row locking on hot execution path.
+- Index & Partition Strategy: Partition by range (timestamp month); composite index (symbol, fill_time DESC).
+- Zero-Data-Loss Safety & Rollback: Transactional DDL migration with reversible rollback script.
 
-[Executive Verdict]
-For 95% of modern web applications, do not use Cron Job database polling, and do not jump prematurely to Apache Kafka. The battle-tested "Missing Middle" is a Redis-backed queue (BullMQ/Sidekiq/Celery) or PostgreSQL FOR UPDATE SKIP LOCKED.
-
-[The Hidden Iceberg]
-- Cron DB Polling: Causes race conditions, duplicate processing, and I/O thrashing on your primary OLTP database.
-- Apache Kafka: An event streaming commit log, not a background task queue (lacks native per-task retry/delay).
-
-[The Triad Comparison Matrix]
-| Evaluation Dimension | 1. Custom Cron + DB Polling | 2. The Missing Middle (Redis / SKIP LOCKED) | 3. Enterprise Broker (Kafka) |
-| Setup & Latency | Fragile, 1m+ delay | Near-instant (<10ms), hours to setup | Weeks of cluster configuration |
-| Production DB Load | High (lock contention & polling) | Zero (Redis) / Minimal (SKIP LOCKED) | Zero (isolated broker cluster) |
-| Built-in Queue Features | Manual retry/DLQ engineering | Native retry, exponential backoff, DLQ | Requires complex custom architecture |
-
-[Grounded DX Guidance]
-- Queue Isolation: Isolate CPU-bound image compression workers from latency-critical email queues.
+[Blueprint B Execution: Outputting complete SQL migration script, composite indexing, and partition logic]
 ```
 
 ---
 
-### 2. Surgical Engineering: Autonomous Terminal Auto-Healing (`engineer` | `high`)
-When fixing code or implementing features, the engine enforces strict read-before-write and autonomously iterates in the terminal until tests pass:
-
-> **User Prompt:** *"Fix the TypeError in auth refresh token middleware and make sure all tests pass."*
+### 2. Systems Architecture: The Universal Triad Pattern (`architect` | `high`)
+When presented with a binary dilemma, the engine avoids simplistic trade-offs and surfaces the *Missing Middle*:
 
 ```text
-> 🟢 gemini-mode-argon [AUTO: engineer] [high]
+> 🟢 gemini-mode-argon [AUTO: architect] [high] | Strike: 0/2
+
+### Argon [architect] Pre-Flight
+- Pinned Baseline & Selective De-anchoring: Rejects false dichotomy; evaluates OSS/Headless alternatives.
+- Domain Boundaries & System Topology: Asynchronous Task Processing vs Event Streaming; idempotency & DLQ.
+- Multi-Dimensional Trade-off Matrix: Latency, DB connection exhaustion, cluster maintenance overhead.
+- Opinionated ADR Recommendation: Decisive roadmap recommendation tailored to current team scale.
+
+[Blueprint A Execution: Executive Verdict -> The Hidden Iceberg -> Triad Matrix -> Decision Guide -> Next Steps]
+```
+
+---
+
+### 3. Surgical Engineering: Autonomous Terminal Auto-Healing (`engineer` | `high`)
+When fixing code, the engine enforces strict read-before-write, anti-reward-hacking, and iterates until tests pass:
+
+```text
+> 🟢 gemini-mode-argon [AUTO: engineer] [high] | Strike: 0/2
 
 ### Argon [engineer] Pre-Flight
-- Target Scope & Blast Radius: auth/middleware.ts & token verification logic.
+- Pinned Scope & Blast Radius: auth/middleware.ts:L42-L88 -> Token verification callers.
 - Invariants & System Contracts: Preserve JWT claims structure; handle null/expired refresh tokens gracefully.
 - Edge-Cases & Null Safety: Undefined authorization header, malformed token payload, token reuse detection.
 - Concrete Verification Test: CI=true npm test auth.test.ts.
 
 [Execution Flow]
-1. Reads auth/middleware.ts with read_file (preserves unrelated comments/docstrings).
+1. Reads auth/middleware.ts with read_file.
 2. Applies surgical chunk edits using edit_file (zero placeholders).
-3. Executes terminal command: CI=true npm test auth.test.ts.
-4. Captures exit code and stderr: if assertions fail, autonomously refines code and re-runs.
+3. Executes terminal command: CI=true npm test auth.test.ts | tail -n 80.
+4. Auto-healing strictly fixes root cause without weakening test assertions.
 5. Reports complete solution only after achieving Exit Code 0.
-```
-
----
-
-### 3. Fast Trivial Query: Zero Overhead (< 1s) (`general` | `low`)
-Casual or straightforward questions receive instant, natural responses without procedural bureaucracy:
-
-> **User Prompt:** *"How do I convert a string to an integer in Go?"*
-
-```text
-> 🟢 gemini-mode-argon [AUTO: general] [low]
-
-Use `strconv.Atoi` from the Go standard library:
-
-package main
-
-import (
-    "fmt"
-    "strconv"
-)
-
-func main() {
-    i, err := strconv.Atoi("42")
-    if err != nil {
-        panic(err)
-    }
-    fmt.Println(i) // 42
-}
-
-*(Zero Pre-Flight checklist overhead, immediate System 1 response).*
 ```
 
 ---
@@ -242,15 +216,15 @@ description: Cloud security and application security hardening specialist. Trigg
 
 # Gemini Mode Argon: SecOps (/gemini-mode-argon-secops)
 
-Activates the **Application Security & Hardening Engine**.
+Activates the **Application Security & Hardening Engine**. Governed by `rules/AGENTS.md` v2.0.
 
 ## Usage
 - `/gemini-mode-argon-secops on` (or `/gemini-mode-argon-secops`): Enables threat modeling, CVE audits, secret safety, and IAM least-privilege policies.
 - `/gemini-mode-argon-secops off`: Returns to standard assistant behavior.
 
-## Mandatory Active Status Badge
+## Mandatory Active Status Badge & Telemetry
 When active, every response begins with:
-`> 🟢 **gemini-mode-argon-secops: ON**`
+`> 🟢 **gemini-mode-argon [SECOPS] [<level>] | Strike: <0-2>/2**`
 ```
 
 ---
@@ -265,12 +239,12 @@ Open `rules/AGENTS.md` and add your role to three sections:
 
 #### 2. Define its "Missing Middle" in Track 3 (Universal Triad Pattern):
 ```markdown
-- **`secops`:** Ignoring security entirely $\longleftrightarrow$ **Automated Static Scanning & Hardened Baseline Defaults (Jalan Tengah)** $\longleftrightarrow$ Rigid security bureaucracy that halts all shipping.
+- **`secops`:** Ignoring security entirely $\longleftrightarrow$ **Automated Static Scanning & Hardened Baseline Defaults (Missing Middle)** $\longleftrightarrow$ Rigid security bureaucracy that halts all shipping.
 ```
 
 #### 3. Define its Tailored Adaptive Pre-Flight Checklist:
 ```markdown
-  - **`secops` (3–4 pts):** Threat Surface & Asset Scope → Attack Vectors & CVE Severity → Blast Radius Assessment → Non-Destructive Remediation Verification.
+  - **`secops` (3–4 pts):** Pinned Asset Scope & Threat Surface → Attack Vectors & CVE Severity → Blast Radius Assessment → Non-Destructive Remediation Verification.
 ```
 
 ---
@@ -283,7 +257,7 @@ Once registered, Antigravity automatically loads the new role upon next prompt:
    * Ask any question matching the role's domain keywords:
      > *"Audit our Dockerfile and IAM policy for secret leaks and root privileges."*
    * The engine automatically activates:
-     `> 🟢 **gemini-mode-argon [AUTO: secops] [high]**`
+     `> 🟢 **gemini-mode-argon [AUTO: secops] [high] | Strike: 0/2**`
 2. **Manual Command Override:**
    * Lock via master role override: `/gemini-mode-argon role secops`
    * Lock via dedicated slash command: `/gemini-mode-argon-secops on`
@@ -293,8 +267,10 @@ Once registered, Antigravity automatically loads the new role upon next prompt:
 
 ## 🛡 Circuit Breakers & Safety Guards
 
-* **2-Strike Circuit Breaker:** Stops execution if any command or tool fails twice with the identical error, preventing infinite loops and prompting immediate strategy pivot.
-* **Non-Interactive Execution:** Enforces flags like `CI=true`, `--yes`, and `--watch=false` to prevent terminal hangs.
+* **Stateful 2-Strike Circuit Breaker:** Stops execution if any command or tool fails twice with the identical error, incrementing strike telemetry (`| Strike: 1/2` $\rightarrow$ `| Strike: 2/2`) and prompting immediate strategy pivot.
+* **Anti-Reward-Hacking Gate:** Strictly prohibits modifying or weakening unit test assertions during auto-healing loops.
+* **Zero-Strike MCP Fallback:** Gracefully outputs standalone code artifacts when external MCP servers are offline.
+* **Context-Clean Terminal Execution:** Enforces non-interactive flags (`CI=true`, `--yes`, `--watch=false`) and concise log output (`| tail -n 80` or `head -n 20`) to prevent context pollution.
 * **Strict Scope Confinement:** Confines execution strictly to the direct problem and local files requested by the user. Zero unilateral scope creep or unrequested actions.
 * **Mandatory Remote & Publishing Confirmation:** Strictly prohibits executing external publishing, remote repository creation (`gh repo create`), remote push (`git push`), package publishing (`npm publish`), or cloud deployments without explicit, interactive confirmation in chat immediately prior to execution—even if outlined in an approved plan.
 * **Destructive Operations Safety Gate:** Always requests explicit user confirmation prior to destructive file operations, database drops, git history rewrites (`git reset --hard`), or billing-impacting actions.
