@@ -239,7 +239,7 @@ Open `rules/AGENTS.md` and add your role to three sections:
 
 #### 2. Define its "Missing Middle" in Track 3 (Universal Triad Pattern):
 ```markdown
-- **`secops`:** Ignoring security entirely $\longleftrightarrow$ **Automated Static Scanning & Hardened Baseline Defaults (Jalan Tengah)** $\longleftrightarrow$ Rigid security bureaucracy that halts all shipping.
+- **`secops`:** Ignoring security entirely $\longleftrightarrow$ **Automated Static Scanning & Hardened Baseline Defaults (Missing Middle)** $\longleftrightarrow$ Rigid security bureaucracy that halts all shipping.
 ```
 
 #### 3. Define its Tailored Adaptive Pre-Flight Checklist:
