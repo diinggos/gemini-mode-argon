@@ -104,7 +104,17 @@ def inspect_code_verification(transcript_path, artifact_dir="", conv_id=""):
         return None, None, (-1, -1), None
 
     last_edit_pos, last_canon_file = edits[-1]
-    post_runs = [v for v in verifications if v[0] > last_edit_pos]
+    last_edit_step = last_edit_pos[0]
+
+    # Verification must run in a subsequent planner step (step_idx > last_edit_step)
+    # because tools within the same batch can execute concurrently.
+    post_runs = [v for v in verifications if v[0][0] > last_edit_step]
+
+    # Failures in the same batch or subsequent runs immediately block exit for Reflexion
+    same_or_later_failures = [v for v in verifications if v[0] >= last_edit_pos and not v[1]]
+    if same_or_later_failures:
+        _v_pos, _passed, latest_code = same_or_later_failures[-1]
+        return "failed_test", last_canon_file, last_edit_pos, latest_code
 
     if not post_runs:
         return "unverified", last_canon_file, last_edit_pos, None

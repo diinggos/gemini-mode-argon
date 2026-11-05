@@ -759,12 +759,13 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         self.assertIn("ide_created.ts:IdeContract", ledger["exportedSymbols"])
 
     def test_17_same_step_parallel_edit_and_test_tuple_order(self):
-        """Stop guard must use (step_idx, call_idx) so edit_file + run_command in the SAME step is recognized."""
+        """Verification must run in a subsequent step (step_idx > edit_step_idx) to avoid concurrent batch race conditions."""
         code_file = os.path.join(self.workspace_dir, "fast.py")
         p_stop = self.base_payload()
         p_stop["terminationReason"] = "NO_TOOL_CALL"
 
-        # Single PLANNER_RESPONSE step with tcs[0]=edit_file and tcs[1]=run_command("CI=true pytest") exiting 0
+        # 1. Single PLANNER_RESPONSE step with tcs[0]=edit_file and tcs[1]=run_command exiting 0:
+        # Batched calls execute concurrently, so same-step test cannot guarantee post-edit verification -> continue
         write_jsonl(
             self.transcript_path,
             [
@@ -781,9 +782,11 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
                 {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
             ],
         )
-        self.assertEqual(run_hook("stop_guard.py", p_stop)["decision"], "allow")
+        res_same_step = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_same_step["decision"], "continue")
+        self.assertIn("have not been verified", res_same_step["reason"])
 
-        # Same single-step batch, but tcs[1] exits with code 1 -> must trigger Reflexion auto-healing!
+        # 2. Same-step batch with failing test (exit code 1) -> must immediately trigger Reflexion auto-healing
         write_jsonl(
             self.transcript_path,
             [
@@ -803,6 +806,31 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         res_fail = run_hook("stop_guard.py", p_stop)
         self.assertEqual(res_fail["decision"], "continue")
         self.assertIn("Exit Code 1", res_fail["reason"])
+
+        # 3. Subsequent step verification: edit at step 1, verification test at step 2 exiting 0 -> allowed!
+        write_jsonl(
+            self.transcript_path,
+            [
+                {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [
+                        {"name": "edit_file", "args": {"Path": code_file}},
+                    ],
+                },
+                {"type": "GENERIC", "status": "DONE", "content": "Made 1 replacement"},
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [
+                        {"name": "run_command", "args": {"CommandLine": "CI=true pytest"}},
+                    ],
+                },
+                {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+            ],
+        )
+        self.assertEqual(run_hook("stop_guard.py", p_stop)["decision"], "allow")
 
     def test_18_polyglot_test_runners_and_git_global_flags(self):
         """Verify .NET/Ruby/PHP/Swift/C++ test runners and git -C / recursive rm destructive patterns."""
@@ -838,10 +866,16 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
                         "status": "DONE",
                         "tool_calls": [
                             {"name": "edit_file", "args": {"Path": fpath}},
-                            {"name": "run_command", "args": {"CommandLine": runner_cmd}},
                         ],
                     },
                     {"type": "GENERIC", "status": "DONE", "content": "Edited"},
+                    {
+                        "type": "PLANNER_RESPONSE",
+                        "status": "DONE",
+                        "tool_calls": [
+                            {"name": "run_command", "args": {"CommandLine": runner_cmd}},
+                        ],
+                    },
                     {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
                 ],
             )
