@@ -52,29 +52,49 @@ CODE_EXTENSIONS = {
     ".sql",
 }
 
-VERIFICATION_CMD_RE = re.compile(
+ENV_PREFIX_RE = re.compile(r"^(?:[A-Za-z_][A-Za-z0-9_]*=(?:\"[^\"]*\"|'[^']*'|[^\s]+)\s+)+")
+
+VERIFICATION_EXECUTABLE_RE = re.compile(
+    r"^(?:[\w./~-]+/)?"
     r"(?:"
-    r"(?:^|\s|(?:[\w./~-]+/))(?:pytest|vitest|jest|mocha|ruff|flake8|mypy|pyright|eslint|biome|tsc|phpunit|pest|rspec|ctest|playwright)\b"
-    r"|\b(?:uv|poetry|pipenv)\s+run\s+(?:pytest|python3?(?:\.\d+)?\s+-m\s+(?:pytest|unittest)|\S*(?:test|audit|verify)\S*\.py)\b"
-    r"|\bcargo\s+(?:test|check|build|clippy)\b"
-    r"|\bgo\s+(?:test|vet|build)\b"
-    r"|\b(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?(?:test|check|lint|typecheck|build)\b"
-    r"|\b(?:npx|bunx|pnpx)\s+(?:vitest|jest|mocha|playwright|tsc)\b"
-    r"|\b(?:dart|flutter)\s+(?:test|analyze)\b"
-    r"|(?:^|\s|(?:[\w./~-]+/))(?:mvn|gradlew?)\s+(?:test|check|compile|verify)\b"
-    r"|\bdotnet\s+(?:test|build)\b"
+    r"(?:pytest|vitest|jest|mocha|ruff|flake8|mypy|pyright|eslint|biome|tsc|phpunit|pest|rspec|ctest|playwright)\b"
+    r"|(?:uv|poetry|pipenv)\s+run\s+(?:pytest|python3?(?:\.\d+)?\s+-m\s+(?:pytest|unittest)|\S*(?:test|audit|verify)\S*\.py)\b"
+    r"|cargo\s+(?:test|check|build|clippy)\b"
+    r"|go\s+(?:test|vet|build)\b"
+    r"|(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?(?:test|check|lint|typecheck|build)\b"
+    r"|(?:npx|bunx|pnpx)\s+(?:vitest|jest|mocha|playwright|tsc)\b"
+    r"|(?:dart|flutter)\s+(?:test|analyze)\b"
+    r"|(?:mvn|gradlew?)\s+(?:test|check|compile|verify)\b"
+    r"|dotnet\s+(?:test|build)\b"
     r"|\bbundle\s+exec\s+(?:rspec|rake\s+test)\b"
     r"|\brake\s+test\b"
     r"|\bphp\s+artisan\s+test\b"
     r"|\bswift\s+(?:test|build)\b"
     r"|\bcmake\s+--build\b"
     r"|\bmake\s+(?:test|check|build)\b"
-    r"|(?:^|\s|(?:[\w./~-]+/))python3?(?:\.\d+)?\s+(?:-m\s+(?:pytest|unittest|py_compile|doctest)|\S*(?:test|audit|verify)\S*\.py)\b"
-    r"|\b(?:bash|sh|zsh)\s+-n\b"
+    r"|python3?(?:\.\d+)?\s+(?:-m\s+(?:pytest|unittest|py_compile|doctest)|\S*(?:test|audit|verify)\S*\.py)\b"
+    r"|(?:bash|sh|zsh)\s+-n\b"
     r"|\bEXPLAIN\b"
     r")",
     re.IGNORECASE,
 )
+
+CMD_SPLIT_RE = re.compile(r"[;&|\n]+")
+
+
+def is_verification_command(cmd_line):
+    """Return True if cmd_line invokes a verification runner as executable, avoiding argument false positives."""
+    if not isinstance(cmd_line, str) or not cmd_line.strip():
+        return False
+    segments = CMD_SPLIT_RE.split(cmd_line)
+    for seg in segments:
+        s = seg.strip().lstrip("(").rstrip(")").strip()
+        if not s:
+            continue
+        core = ENV_PREFIX_RE.sub("", s).strip()
+        if VERIFICATION_EXECUTABLE_RE.match(core):
+            return True
+    return False
 
 
 def inspect_code_verification(transcript_path, artifact_dir="", conv_id=""):
@@ -94,7 +114,7 @@ def inspect_code_verification(transcript_path, artifact_dir="", conv_id=""):
                 edits.append(((step_idx, call_idx), canonical_path(raw_p)))
         elif name == "run_command":
             cmd = str(unwrap_arg(args.get("CommandLine", "")))
-            if VERIFICATION_CMD_RE.search(cmd):
+            if is_verification_command(cmd):
                 if exit_code == "RUNNING":
                     continue
                 passed = (not failed) and (exit_code is None or exit_code == 0)
@@ -111,7 +131,7 @@ def inspect_code_verification(transcript_path, artifact_dir="", conv_id=""):
     post_runs = [v for v in verifications if v[0][0] > last_edit_step]
 
     # Failures in the same batch or subsequent runs immediately block exit for Reflexion
-    same_or_later_failures = [v for v in verifications if v[0] >= last_edit_pos and not v[1]]
+    same_or_later_failures = [v for v in verifications if v[0][0] >= last_edit_step and not v[1]]
     if same_or_later_failures:
         _v_pos, _passed, latest_code = same_or_later_failures[-1]
         return "failed_test", last_canon_file, last_edit_pos, latest_code

@@ -832,6 +832,55 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         )
         self.assertEqual(run_hook("stop_guard.py", p_stop)["decision"], "allow")
 
+        # 4. Same-step batch with failing test BEFORE edit (tcs[0]=fail, tcs[1]=edit): must block exit
+        write_jsonl(
+            self.transcript_path,
+            [
+                {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [
+                        {"name": "run_command", "args": {"CommandLine": "CI=true pytest"}},
+                        {"name": "edit_file", "args": {"Path": code_file}},
+                    ],
+                },
+                {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 1."},
+                {"type": "GENERIC", "status": "DONE", "content": "Made 1 replacement"},
+            ],
+        )
+        res_fail_before = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_fail_before["decision"], "continue")
+        self.assertIn("Exit Code 1", res_fail_before["reason"])
+
+        # 5. Non-executable argument match (e.g. echo pytest) exiting 0 must NOT count as verification
+        code_file_echo = os.path.join(self.workspace_dir, "echo_check.py")
+        write_jsonl(
+            self.transcript_path,
+            [
+                {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [
+                        {"name": "edit_file", "args": {"Path": code_file_echo}},
+                    ],
+                },
+                {"type": "GENERIC", "status": "DONE", "content": "Made 1 replacement"},
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [
+                        {"name": "run_command", "args": {"CommandLine": "echo pytest"}},
+                    ],
+                },
+                {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+            ],
+        )
+        res_echo = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_echo["decision"], "continue")
+        self.assertIn("have not been verified", res_echo["reason"])
+
     def test_18_polyglot_test_runners_and_git_global_flags(self):
         """Verify .NET/Ruby/PHP/Swift/C++ test runners and git -C / recursive rm destructive patterns."""
         write_jsonl(
