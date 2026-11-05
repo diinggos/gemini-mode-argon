@@ -66,6 +66,20 @@ TEST_RUNNER_RE = re.compile(
 
 COMPOUND_SHELL_TOKENS = ("|", ">", "<", "&&", "||", ";", "\n", "`", "$(")
 
+REVIEWER_SHELL_MUTATION_RE = re.compile(
+    r"(?:"
+    r"(?:>|>>)\s*(?!(?:/dev/null|/tmp/|\$TMPDIR)\b)"
+    r"|\b(?:sed|perl)\s+-[a-zA-Z]*i\b"
+    r"|\b(?:touch|mkdir|rmdir|cp|mv|rm|tee|truncate|patch)\b"
+    r"|\b(?:npm|pnpm|yarn|bun)\s+(?:install|add|remove|update)\b"
+    r"|\b(?:pip|pip3)\s+install\b"
+    r"|\b(?:poetry|uv|cargo)\s+add\b"
+    r"|\bgit\s+(?:commit|checkout|restore|merge|rebase|cherry-pick|revert|apply)\b"
+    r"|\b(?:python3?|node|ruby|perl|bash|sh|zsh)\s+-[ce]\b"
+    r")",
+    re.IGNORECASE,
+)
+
 
 def is_pure_single_test_command(cmd):
     """Return True if cmd is a single-statement test runner invocation safe for pipefail wrapping."""
@@ -134,6 +148,18 @@ def main():
                 }
                 print(json.dumps(out))
                 return
+
+        if state["role"] == "reviewer" and REVIEWER_SHELL_MUTATION_RE.search(cmd):
+            out = {
+                "decision": "deny",
+                "reason": (
+                    "Argon Reviewer Gate: Role 'reviewer' is strictly read-only for workspace files. "
+                    f"Shell file mutations and inline scripts ('{cmd}') are blocked. "
+                    "Deliver patch diffs in your response/artifact or switch role to 'engineer'."
+                ),
+            }
+            print(json.dumps(out))
+            return
 
         if is_pure_single_test_command(cmd):
             sanitized_cmd = (

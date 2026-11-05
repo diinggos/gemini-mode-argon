@@ -306,6 +306,40 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         self.assertEqual(res_ws["decision"], "deny")
         self.assertIn("Reviewer Gate", res_ws["reason"])
 
+        # Reviewer mode also blocks mutating shell commands (e.g. python -c, touch, redirection)
+        p_sh_py = self.base_payload()
+        p_sh_py["toolCall"] = {
+            "name": "run_command",
+            "args": {"CommandLine": "python3 -c \"open('hack.py', 'w').write('foo')\""},
+        }
+        res_sh_py = run_hook("pre_tool_guard.py", p_sh_py)
+        self.assertEqual(res_sh_py["decision"], "deny")
+        self.assertIn("Reviewer Gate", res_sh_py["reason"])
+
+        p_sh_red = self.base_payload()
+        p_sh_red["toolCall"] = {
+            "name": "run_command",
+            "args": {"CommandLine": "echo 'bad' > evil.py"},
+        }
+        res_sh_red = run_hook("pre_tool_guard.py", p_sh_red)
+        self.assertEqual(res_sh_red["decision"], "deny")
+        self.assertIn("Reviewer Gate", res_sh_red["reason"])
+
+        # Reviewer mode allows read-only shell commands and test runners
+        p_sh_test = self.base_payload()
+        p_sh_test["toolCall"] = {
+            "name": "run_command",
+            "args": {"CommandLine": "CI=true pytest"},
+        }
+        self.assertEqual(run_hook("pre_tool_guard.py", p_sh_test)["decision"], "allow")
+
+        p_sh_diff = self.base_payload()
+        p_sh_diff["toolCall"] = {
+            "name": "run_command",
+            "args": {"CommandLine": "git diff HEAD~1"},
+        }
+        self.assertEqual(run_hook("pre_tool_guard.py", p_sh_diff)["decision"], "allow")
+
     def test_07_pipefail_test_sanitizer_preserves_exit_codes_and_env_prefix(self):
         """Rewritten test commands MUST return Exit Code != 0 on test failure and 0 on test pass."""
         write_jsonl(
