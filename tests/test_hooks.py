@@ -966,6 +966,8 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
             ("UserTest.php", "php artisan test"),
             ("PkgTests.swift", "swift test"),
             ("main.cpp", "ctest --output-on-failure"),
+            ("Component.vue", "npm test"),
+            ("Widget.svelte", "npm test"),
         ]
         p_stop = self.base_payload()
         p_stop["terminationReason"] = "NO_TOOL_CALL"

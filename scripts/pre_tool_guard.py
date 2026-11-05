@@ -171,7 +171,12 @@ def main():
                 f"mkfifo \"$_fifo\" 2>/dev/null || true; "
                 f"if [ -p \"$_fifo\" ]; then "
                 f"({cmd}) >\"$_fifo\" 2>&1 & _pid=$!; tail -n 80 <\"$_fifo\"; wait $_pid; _rc=$?; rm -f \"$_fifo\"; exit $_rc; "
-                f"else {cmd} 2>&1 | tail -n 80; fi; "
+                f"else "
+                f"_tmp=$(mktemp 2>/dev/null || echo /tmp/argon_out_$$.tmp); "
+                f"if touch \"$_tmp\" 2>/dev/null; then "
+                f"({cmd}) >\"$_tmp\" 2>&1; _rc=$?; tail -n 80 \"$_tmp\"; rm -f \"$_tmp\"; exit $_rc; "
+                f"else {cmd}; fi; "
+                f"fi; "
                 f"fi )"
             )
             out = {
