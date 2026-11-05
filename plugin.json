@@ -1,6 +1,21 @@
 {
   "name": "gemini-mode-argon",
   "displayName": "Gemini Mode Argon Suite",
-  "version": "2.1.0",
-  "description": "Universal frontier-grade reasoning engine with Autonomous Role Dispatching across 13 specializations (8 Technical, 4 Creative, 1 Financial), stateful strike telemetry with auto-reset, and v2.1 Argon-Parity cognitive specification."
+  "version": "2.7.1",
+  "description": "Universal frontier reasoning engine elevating Gemini 3.8 Flash to Gemini 4 Argon parity across 13 specialist roles, 2 native Argon subagents (argon-investigator, argon-coder), and 4 state-aware lifecycle hooks (hooks.json).",
+  "logo": "assets/logo.svg",
+  "suggestedPrompts": [
+    "/gemini-mode-argon on — Activate Auto-Role, Auto-Level, and 4-Beat verification",
+    "/gemini-mode-argon-architect Audit our system architecture, scaling bottlenecks, and ADRs",
+    "/gemini-mode-argon-reviewer Perform a read-only OWASP, concurrency, and readiness review"
+  ],
+  "author": {
+    "name": "DIINGGO SIROJUDIN",
+    "url": "https://github.com/diinggos"
+  },
+  "homepage": "https://github.com/diinggos/gemini-mode-argon",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/diinggos/gemini-mode-argon.git"
+  }
 }
