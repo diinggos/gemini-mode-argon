@@ -69,6 +69,24 @@ BG_TASK_FINISH_RE = re.compile(
     re.IGNORECASE,
 )
 
+NO_RUN_FLAGS_RE = re.compile(
+    r"(?:^|\s)(?:"
+    r"--version\b"
+    r"|-[a-zA-Z]*V[a-zA-Z]*\b"
+    r"|--help\b"
+    r"|-[a-zA-Z]*h[a-zA-Z]*\b"
+    r"|--collect-only\b"
+    r"|--co\b"
+    r"|--dry-run\b"
+    r"|--no-run\b"
+    r"|--list(?:-tests|-suites)?\b"
+    r"|--listTests\b"
+    r"|--show-config\b"
+    r"|--showConfig\b"
+    r"|-list\b"
+    r")"
+)
+
 TOKEN_SAVER_ARGS = {"on", "off", "true", "false", "1", "0", "full", "lite", "ultra", "auto"}
 
 
@@ -282,6 +300,12 @@ def apply_slash_commands(clean_text, state):
                 state["level"] = tok
                 consumed_any = True
                 i += 1
+            elif tok in (VALID_ROLES - {"auto"}):
+                # Shorthand role without 'role' keyword, e.g. /gemini-mode-argon reviewer
+                state["active"] = True
+                state["role"] = tok
+                consumed_any = True
+                i += 1
             elif tok in ("token-saver", "tokensaver"):
                 state["active"] = True
                 consumed_any = True
@@ -483,6 +507,7 @@ def iter_transcript_tool_events(transcript_path):
 
     total = len(steps)
     bg_tasks = {}
+    bg_unkeyed = []
     for idx, step in enumerate(steps):
         st_type = str(step.get("type", "")).upper()
         if st_type in ("SYSTEM_MESSAGE", "GENERIC"):
@@ -490,7 +515,10 @@ def iter_transcript_tool_events(transcript_path):
             m_fin = BG_TASK_FINISH_RE.search(content)
             if m_fin:
                 raw_tid = m_fin.group(1).strip() if m_fin.group(1) else ""
-                task_info = bg_tasks.get(raw_tid) if raw_tid else bg_tasks.get("__unkeyed__")
+                if raw_tid:
+                    task_info = bg_tasks.get(raw_tid)
+                else:
+                    task_info = bg_unkeyed.pop(0) if bg_unkeyed else None
                 if task_info:
                     if isinstance(task_info, tuple) and len(task_info) == 3:
                         launch_step, launch_call_idx, tc_args = task_info
@@ -553,7 +581,7 @@ def iter_transcript_tool_events(transcript_path):
                     if m_tid and m_tid.group(1):
                         bg_tasks[m_tid.group(1).strip()] = (idx, j, tc_args)
                     else:
-                        bg_tasks["__unkeyed__"] = (idx, j, tc_args)
+                        bg_unkeyed.append((idx, j, tc_args))
             else:
                 # Tool call has not yet executed or produced a result in transcript
                 failed = True

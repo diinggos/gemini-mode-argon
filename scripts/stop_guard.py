@@ -13,6 +13,7 @@ if SCRIPT_DIR not in sys.path:
 
 from argon_core import (  # noqa: E402
     MUTATION_TOOL_NAMES,
+    NO_RUN_FLAGS_RE,
     canonical_path,
     extract_tool_target_path,
     is_artifact_or_scratch_path,
@@ -56,8 +57,7 @@ CODE_EXTENSIONS = {
 
 ENV_PREFIX_RE = re.compile(r"^(?:[A-Za-z_][A-Za-z0-9_]*=(?:\"[^\"]*\"|'[^']*'|[^\s]+)\s+)+")
 
-VERIFICATION_EXECUTABLE_RE = re.compile(
-    r"^(?:[\w./~-]+/)?"
+VERIFICATION_RUNNER_PATTERN = (
     r"(?:"
     r"(?:pytest|vitest|jest|mocha|ruff|flake8|mypy|pyright|eslint|biome|tsc|phpunit|pest|rspec|ctest|playwright)\b"
     r"|(?:uv|poetry|pipenv)\s+run\s+(?:pytest|python3?(?:\.\d+)?\s+-m\s+(?:pytest|unittest)|\S*(?:test|audit|verify)\S*\.py)\b"
@@ -77,7 +77,15 @@ VERIFICATION_EXECUTABLE_RE = re.compile(
     r"|python3?(?:\.\d+)?\s+(?:-m\s+(?:pytest|unittest|py_compile|doctest)|\S*(?:test|audit|verify)\S*\.py)\b"
     r"|(?:bash|sh|zsh)\s+-n\b"
     r"|\bEXPLAIN\b"
-    r")",
+    r")"
+)
+
+VERIFICATION_EXECUTABLE_RE = re.compile(
+    r"^(?:[\w./~-]+/)?" + VERIFICATION_RUNNER_PATTERN,
+    re.IGNORECASE,
+)
+VERIFICATION_RUNNER_UNANCHORED_RE = re.compile(
+    r"\b" + VERIFICATION_RUNNER_PATTERN,
     re.IGNORECASE,
 )
 
@@ -140,8 +148,26 @@ def extract_shell_source_edits(cmd_line, artifact_dir="", conv_id=""):
                 if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
                     targets.append(canon)
 
-    # 5. python3 -c open('...', 'w')
-    for m in re.finditer(r"""open\(\s*['"]([^'"]+)['"]\s*,\s*['"][wa+]""", cmd_line):
+    # 5. curl -o file / curl --output file
+    for m in re.finditer(r"\bcurl\s+(?:.*?\s+)?(?:-[a-zA-Z]*o|--output)\s+([^\s;&|]+)", cmd_line, re.IGNORECASE):
+        p = m.group(1).strip()
+        ext = os.path.splitext(p)[1].lower()
+        if ext in CODE_EXTENSIONS:
+            canon = canonical_path(p)
+            if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
+                targets.append(canon)
+
+    # 6. wget -O file
+    for m in re.finditer(r"\bwget\s+(?:.*?\s+)?-O\s*([^\s;&|]+)", cmd_line, re.IGNORECASE):
+        p = m.group(1).strip()
+        ext = os.path.splitext(p)[1].lower()
+        if ext in CODE_EXTENSIONS:
+            canon = canonical_path(p)
+            if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
+                targets.append(canon)
+
+    # 7. python3 -c / node -e file writes
+    for m in re.finditer(r"""(?:open|writeFileSync|writeFile)\(\s*['"]([^'"]+)['"]\s*,\s*['"][wa+]""", cmd_line):
         p = m.group(1).strip()
         ext = os.path.splitext(p)[1].lower()
         if ext in CODE_EXTENSIONS:
@@ -165,10 +191,21 @@ def is_verification_command(cmd_line):
 
     s = cmd_line.strip()
 
+    # Reject no-run / help / version / dry-run options that do not execute test suites
+    if NO_RUN_FLAGS_RE.search(s):
+        return False
+
     # Check if this is the argon pipefail/tempfile sanitized test wrapper
     if s.startswith("(") and s.endswith(")") and "export PYTHONUNBUFFERED=1" in s:
+        # Extract inner command between 'then ' and ' 2>&1 | tail'
+        m_inner = re.search(r"\bthen\s+(.*?)\s+2>&1\s*\|\s*tail", s)
+        if m_inner:
+            inner_cmd = m_inner.group(1).strip()
+            return is_verification_command(inner_cmd)
         core = ENV_PREFIX_RE.sub("", s).strip()
-        return bool(VERIFICATION_EXECUTABLE_RE.search(core))
+        if NO_RUN_FLAGS_RE.search(core):
+            return False
+        return bool(VERIFICATION_RUNNER_UNANCHORED_RE.search(core))
 
     # Reject compound commands containing chaining (||, ;) or un-sanitized pipelines (|)
     # which can swallow or mask non-zero test failure exit codes

@@ -13,6 +13,7 @@ if SCRIPT_DIR not in sys.path:
 from argon_core import (  # noqa: E402
     EDIT_TOOL_NAMES,
     MUTATION_TOOL_NAMES,
+    NO_RUN_FLAGS_RE,
     READ_TOOL_NAMES,
     WRITE_TOOL_NAMES,
     canonical_path,
@@ -28,9 +29,9 @@ from argon_core import (  # noqa: E402
 )
 
 DESTRUCTIVE_PATTERNS = [
-    r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-z0-9-]+(?:=\S+)?))*\s+push\b",
-    r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-z0-9-]+(?:=\S+)?))*\s+reset\s+--hard\b",
-    r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-z0-9-]+(?:=\S+)?))*\s+clean\s+(?:-[a-zA-Z]*f|--force)",
+    r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-zA-Z0-9-]+(?:\s+\S+|=\S+)?))*\s+push\b",
+    r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-zA-Z0-9-]+(?:\s+\S+|=\S+)?))*\s+reset(?:\s+-[a-zA-Z0-9-]+(?:=\S+)?)*\s+--hard\b",
+    r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-zA-Z0-9-]+(?:\s+\S+|=\S+)?))*\s+clean(?:\s+-[a-zA-Z0-9-]+(?:=\S+)?)*\s+(?:-[a-zA-Z]*f[a-zA-Z]*|--force)\b",
     r"\brm(?:\s+-[a-zA-Z0-9-]+(?:=\S+)?)*\s+(?:-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)\b(?:\s+-[a-zA-Z0-9-]+(?:=\S+)?)*(?:\s+--)?\s+\S+",
     r"\bprisma\s+migrate\s+reset\b",
     r"\bsupabase\s+db\s+reset\b",
@@ -38,7 +39,7 @@ DESTRUCTIVE_PATTERNS = [
     r"\bphp\s+artisan\s+migrate:(?:fresh|reset)\b",
     r"\bdropdb\b",
     r"\bgh\s+repo\s+create\b",
-    r"\bnpm\s+publish\b",
+    r"\b(?:npm|pnpm|yarn|bun)\s+publish\b",
 ]
 
 ENV_PREFIX_RE = re.compile(
@@ -72,11 +73,12 @@ REVIEWER_SHELL_MUTATION_RE = re.compile(
     r"|\b(?:sed|perl)\s+-[a-zA-Z]*i\b"
     r"|\b(?:touch|mkdir|rmdir|cp|mv|rm|tee|truncate|patch)\b"
     r"|\b(?:npm|pnpm|yarn|bun)\s+(?:install|add|remove|update)\b"
-    r"|\b(?:pip|pip3)\s+install\b"
-    r"|\b(?:poetry|uv|cargo)\s+add\b"
-    r"|\bgit\s+(?:commit|checkout|restore|merge|rebase|cherry-pick|revert|apply)\b"
+    r"|\b(?:pip|pip3)\s+(?:install|uninstall)\b"
+    r"|\b(?:poetry|uv|cargo)\s+(?:add|remove|update|install)\b"
+    r"|\bgo\s+(?:get|install|mod\s+(?:tidy|download|edit))\b"
+    r"|\bgit\s+(?:commit|checkout|restore|merge|rebase|cherry-pick|revert|apply|pull|reset|clean|tag|branch\s+-[dDm])\b"
     r"|\b(?:python3?|node|ruby|perl|bash|sh|zsh)\s+-[ce]\b"
-    r"|\bcurl\s+(?:.*?\s+)?(?:-[a-zA-Z]*[oO]|--output)\s+(?!(?:/dev/null|/tmp/|\$TMPDIR)\b)"
+    r"|\bcurl\s+(?:.*?\s+)?(?:(?:-[a-zA-Z]*[oO]|--output)\s+(?!(?:/dev/null|/tmp/|\$TMPDIR)\b)|--remote-name\b)"
     r"|\bwget\s+(?!(?:-O\s*(?:/dev/null|/tmp/|\$TMPDIR))\b)"
     r")",
     re.IGNORECASE,
@@ -88,6 +90,8 @@ def is_pure_single_test_command(cmd):
     if not cmd or cmd.startswith("(") or cmd.endswith("&"):
         return False
     if any(tok in cmd for tok in COMPOUND_SHELL_TOKENS):
+        return False
+    if NO_RUN_FLAGS_RE.search(cmd):
         return False
     core_cmd = ENV_PREFIX_RE.sub("", cmd).strip()
     return bool(TEST_RUNNER_RE.match(core_cmd))

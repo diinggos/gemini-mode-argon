@@ -1774,6 +1774,166 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
                 f"Expected force_ask for: {cmd}",
             )
 
+        # 5. Reject runner modes that do not execute checks (pytest --version, pytest -h, etc.)
+        p_stop_ver = self.base_payload()
+        p_stop_ver["terminationReason"] = "NO_TOOL_CALL"
+        app_file_no_run = os.path.join(self.workspace_dir, "app_no_run.py")
+        steps_no_run = [
+            {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": f"printf 'def foo(): pass\\n' > {app_file_no_run}"},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": "pytest --version"},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "pytest 8.3.3\nCommand exited with code 0."},
+        ]
+        write_jsonl(self.transcript_path, steps_no_run)
+        res_no_run = run_hook("stop_guard.py", p_stop_ver)
+        self.assertEqual(res_no_run["decision"], "continue")
+        self.assertIn("Argon Deterministic Verification Gate", res_no_run["reason"])
+
+        # Also verify pre_tool_guard does not wrap pytest --version as test command
+        p_pre_ver = self.base_payload()
+        p_pre_ver["toolCall"] = {"name": "run_command", "args": {"CommandLine": "pytest --version"}}
+        res_pre_ver = run_hook("pre_tool_guard.py", p_pre_ver)
+        self.assertNotIn("export PYTHONUNBUFFERED=1", str(res_pre_ver))
+
+    def test_31_zero_trust_adversarial_matrix_and_wrapped_test_recognition(self):
+        """Verify sanitized wrapper test recognition, git/package manager flag permutations, and no-run rejection."""
+        # 1. Wrapped test commands (sanitized by pre_tool_guard) MUST be recognized by stop_guard
+        wrapped_pass_cmd = (
+            "( export PYTHONUNBUFFERED=1; "
+            "if (set -o pipefail 2>/dev/null) && set -o pipefail 2>/dev/null; then "
+            "pytest tests/test_app.py 2>&1 | tail -n 80; "
+            "else exit 1; fi )"
+        )
+        app_file_wrapped = os.path.join(self.workspace_dir, "app_wrapped.py")
+        steps_wrapped_pass = [
+            {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": f"printf 'x = 1\\n' > {app_file_wrapped}"},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": wrapped_pass_cmd},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "1 passed\nCommand exited with code 0."},
+        ]
+        write_jsonl(self.transcript_path, steps_wrapped_pass)
+        p_stop_wrapped = self.base_payload()
+        p_stop_wrapped["terminationReason"] = "NO_TOOL_CALL"
+        res_wrapped_pass = run_hook("stop_guard.py", p_stop_wrapped)
+        self.assertEqual(res_wrapped_pass["decision"], "allow")
+
+        # 2. Wrapped test failure MUST trigger Reflexion auto-healing
+        steps_wrapped_fail = list(steps_wrapped_pass)
+        steps_wrapped_fail[-1] = {"type": "GENERIC", "status": "DONE", "content": "1 failed\nCommand exited with code 1."}
+        write_jsonl(self.transcript_path, steps_wrapped_fail)
+        res_wrapped_fail = run_hook("stop_guard.py", p_stop_wrapped)
+        self.assertEqual(res_wrapped_fail["decision"], "continue")
+        self.assertIn("Argon Reflexion Auto-Healing Gate", res_wrapped_fail["reason"])
+
+        # 3. Arbitrary git clean, git reset, and publish options match destructive gate
+        adversarial_destructive = [
+            "git clean -d -f",
+            "git clean -x -d -f",
+            "git clean --force",
+            "git clean -d --force",
+            "git reset -q --hard",
+            "git reset --quiet --hard HEAD~1",
+            "git --git-dir /path/.git push origin main",
+            "pnpm publish",
+            "yarn publish",
+            "bun publish",
+        ]
+        for cmd in adversarial_destructive:
+            p_dest = self.base_payload()
+            p_dest["toolCall"] = {"name": "run_command", "args": {"CommandLine": cmd}}
+            res_dest = run_hook("pre_tool_guard.py", p_dest)
+            self.assertEqual(res_dest["decision"], "force_ask", f"Expected force_ask for: {cmd}")
+
+        # 4. Comprehensive no-run flags matrix rejected across polyglot runners
+        no_run_cmds = [
+            "cargo test --no-run",
+            "cargo test -- --list",
+            "go test -list .",
+            "jest --listTests",
+            "pytest --co",
+            "pytest -h",
+        ]
+        for cmd in no_run_cmds:
+            # pre_tool_guard must not wrap as single test runner
+            p_chk = self.base_payload()
+            p_chk["toolCall"] = {"name": "run_command", "args": {"CommandLine": cmd}}
+            res_chk = run_hook("pre_tool_guard.py", p_chk)
+            self.assertNotIn("export PYTHONUNBUFFERED=1", str(res_chk), f"Should not wrap: {cmd}")
+
+        # 5. Reviewer mode mutations blocked across git pull, go get, and curl --remote-name
+        reviewer_cmds = [
+            "git pull origin main",
+            "go get github.com/stretchr/testify",
+            "go mod tidy",
+            "pip uninstall requests",
+            "curl --remote-name https://example.com/payload.py",
+        ]
+        for cmd in reviewer_cmds:
+            p_rev = self.base_payload()
+            p_rev["lastUserInput"] = "/gemini-mode-argon reviewer"
+            p_rev["toolCall"] = {"name": "run_command", "args": {"CommandLine": cmd}}
+            res_rev = run_hook("pre_tool_guard.py", p_rev)
+            self.assertEqual(res_rev["decision"], "deny", f"Expected deny for reviewer: {cmd}")
+
+        # 6. Shell downloads via curl -o and wget -O tracked as source edits in stop_guard
+        app_file_curl = os.path.join(self.workspace_dir, "app_curl.py")
+        steps_curl = [
+            {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": f"curl -o {app_file_curl} https://example.com/app.py"},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+        ]
+        write_jsonl(self.transcript_path, steps_curl)
+        res_curl = run_hook("stop_guard.py", p_stop_wrapped)
+        self.assertEqual(res_curl["decision"], "continue")
+        self.assertIn("Argon Deterministic Verification Gate", res_curl["reason"])
+
 
 if __name__ == "__main__":
     unittest.main()
