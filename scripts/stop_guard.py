@@ -121,6 +121,14 @@ def inspect_code_verification(transcript_path, artifact_dir="", conv_id=""):
                 verifications.append(((step_idx, call_idx), passed, exit_code))
 
     if not edits:
+        if not verifications:
+            return None, None, (-1, -1), None
+        latest_v_step = verifications[-1][0][0]
+        latest_runs = [v for v in verifications if v[0][0] == latest_v_step]
+        failures = [v for v in latest_runs if not v[1]]
+        if failures:
+            _v_pos, _passed, latest_code = failures[-1]
+            return "failed_test", None, _v_pos, latest_code
         return None, None, (-1, -1), None
 
     last_edit_pos, last_canon_file = edits[-1]
@@ -130,18 +138,20 @@ def inspect_code_verification(transcript_path, artifact_dir="", conv_id=""):
     # because tools within the same batch can execute concurrently.
     post_runs = [v for v in verifications if v[0][0] > last_edit_step]
 
-    # Failures in the same batch or subsequent runs immediately block exit for Reflexion
-    same_or_later_failures = [v for v in verifications if v[0][0] >= last_edit_step and not v[1]]
-    if same_or_later_failures:
-        _v_pos, _passed, latest_code = same_or_later_failures[-1]
-        return "failed_test", last_canon_file, last_edit_pos, latest_code
-
     if not post_runs:
+        # Check if there was a failure in the same batch as the edit
+        same_step_failures = [v for v in verifications if v[0][0] == last_edit_step and not v[1]]
+        if same_step_failures:
+            _v_pos, _passed, latest_code = same_step_failures[-1]
+            return "failed_test", last_canon_file, _v_pos, latest_code
         return "unverified", last_canon_file, last_edit_pos, None
 
-    _v_pos, latest_passed, latest_code = post_runs[-1]
-    if not latest_passed:
-        return "failed_test", last_canon_file, last_edit_pos, latest_code
+    latest_post_step = post_runs[-1][0][0]
+    latest_post_runs = [v for v in post_runs if v[0][0] == latest_post_step]
+    post_failures = [v for v in latest_post_runs if not v[1]]
+    if post_failures:
+        _v_pos, _passed, latest_code = post_failures[-1]
+        return "failed_test", last_canon_file, _v_pos, latest_code
 
     return None, None, (-1, -1), None
 
@@ -174,9 +184,10 @@ def main():
     issue_kind, canon_file, last_edit_pos, exit_code = inspect_code_verification(
         transcript_path, artifact_dir, conv_id
     )
-    if issue_kind and canon_file:
+    if issue_kind:
+        target_label = canon_file or "workspace"
         tracker = load_json_file(TRACKER_FILE)
-        key = f"{conv_id}:{canon_file}:{last_edit_pos[0]}_{last_edit_pos[1]}:{issue_kind}"
+        key = f"{conv_id}:{target_label}:{last_edit_pos[0]}_{last_edit_pos[1]}:{issue_kind}"
         if tracker.get(key, 0) < 1:
             tracker[key] = 1
             if len(tracker) > 500:
@@ -185,8 +196,8 @@ def main():
                     tracker.pop(k, None)
             save_json_file(TRACKER_FILE, tracker)
 
-            base = os.path.basename(canon_file)
             if issue_kind == "unverified":
+                base = os.path.basename(canon_file) if canon_file else "code"
                 msg = (
                     f"Argon Deterministic Verification Gate: Code changes in '{base}' have not "
                     "been verified via terminal test/build/lint. Execute a non-interactive check "
@@ -194,12 +205,20 @@ def main():
                 )
             else:
                 code_str = exit_code if exit_code is not None else "non-zero"
-                msg = (
-                    f"Argon Reflexion Auto-Healing Gate: Latest verification after editing '{base}' "
-                    f"failed (Exit Code {code_str}). Diagnose and fix the root cause in production "
-                    "code (never weaken test assertions) until Exit Code 0, or explicitly report "
-                    "a 2-Strike blocker."
-                )
+                if canon_file:
+                    base = os.path.basename(canon_file)
+                    msg = (
+                        f"Argon Reflexion Auto-Healing Gate: Latest verification after editing '{base}' "
+                        f"failed (Exit Code {code_str}). Diagnose and fix the root cause in production "
+                        "code (never weaken test assertions) until Exit Code 0, or explicitly report "
+                        "a 2-Strike blocker."
+                    )
+                else:
+                    msg = (
+                        f"Argon Reflexion Auto-Healing Gate: Recent verification test failed (Exit Code {code_str}). "
+                        "Diagnose and fix the root cause in production code (never weaken test assertions) "
+                        "until Exit Code 0, or explicitly report a 2-Strike blocker."
+                    )
 
             print(json.dumps({"decision": "continue", "reason": msg}))
             return

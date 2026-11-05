@@ -633,6 +633,44 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         )
         self.assertEqual(run_hook("stop_guard.py", p_stop)["decision"], "allow")
 
+        # 3. Test fails with zero source edits (e.g. read-only investigation): must block premature stop
+        write_jsonl(
+            self.transcript_path,
+            [
+                {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [{"name": "run_command", "args": {"CommandLine": "CI=true pytest"}}],
+                },
+                {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 1."},
+            ],
+        )
+        res_no_edits_fail = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_no_edits_fail["decision"], "continue")
+        self.assertIn("Recent verification test failed (Exit Code 1)", res_no_edits_fail["reason"])
+
+        # 4. When test subsequently passes with zero source edits, stop is allowed
+        write_jsonl(
+            self.transcript_path,
+            [
+                {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [{"name": "run_command", "args": {"CommandLine": "CI=true pytest"}}],
+                },
+                {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 1."},
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [{"name": "run_command", "args": {"CommandLine": "CI=true pytest"}}],
+                },
+                {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+            ],
+        )
+        self.assertEqual(run_hook("stop_guard.py", p_stop)["decision"], "allow")
+
     def test_13_checkpoint_compaction_preserves_state_and_resets_compact_counter(self):
         """After a CHECKPOINT step, active/role persist while turns_since_checkpoint resets cleanly."""
         steps = [{"type": "USER_INPUT", "content": "/gemini-mode-argon-architect on"}]
