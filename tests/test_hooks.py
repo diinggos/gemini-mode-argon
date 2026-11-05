@@ -334,7 +334,7 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         self.assertIn("pipefail", rewritten_fail)
         self.assertIn("PYTHONUNBUFFERED=1", rewritten_fail)
 
-        for shell_bin in ("/bin/zsh", "/bin/sh"):
+        for shell_bin in ("/bin/zsh", "/bin/sh", "/bin/dash"):
             if os.path.exists(shell_bin):
                 proc = subprocess.run(
                     [shell_bin, "-c", rewritten_fail],
@@ -848,6 +848,9 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
             "rm -rf .",
             "rm -rf *",
             "rm --recursive --force /tmp/build",
+            "rm -rf node_modules",
+            "rm -r dist",
+            "rm --recursive -f build",
         ]
         for d_cmd in flagged_cmds:
             p_d = self.base_payload()
@@ -857,6 +860,10 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
                 "force_ask",
                 f"Expected force_ask for: {d_cmd}",
             )
+
+        p_safe = self.base_payload()
+        p_safe["toolCall"] = {"name": "run_command", "args": {"CommandLine": "rm -f file.txt"}}
+        self.assertEqual(run_hook("pre_tool_guard.py", p_safe)["decision"], "allow")
 
     def test_19_top_level_class_symbol_priority_and_line_wrap_guard(self):
         """Top-level classes/functions must take priority over indented helper methods; mid-text line wrap must not activate."""

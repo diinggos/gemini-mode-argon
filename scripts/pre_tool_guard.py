@@ -31,7 +31,7 @@ DESTRUCTIVE_PATTERNS = [
     r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-z0-9-]+(?:=\S+)?))*\s+push\b",
     r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-z0-9-]+(?:=\S+)?))*\s+reset\s+--hard\b",
     r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-z0-9-]+(?:=\S+)?))*\s+clean\s+(?:-[a-zA-Z]*f|--force)",
-    r"\brm\s+(?:-[a-zA-Z]*r[a-zA-Z]*|--recursive)(?:\s+-[a-zA-Z-]+)*\s+(?:[\/~*]|\.\.?)",
+    r"\brm\s+(?:-[a-zA-Z]*r[a-zA-Z]*|--recursive)(?:\s+-[a-zA-Z-]+)*\s+\S+",
     r"\bprisma\s+migrate\s+reset\b",
     r"\bsupabase\s+db\s+reset\b",
     r"\brails\s+db:(?:drop|reset)\b",
@@ -136,7 +136,18 @@ def main():
                 return
 
         if is_pure_single_test_command(cmd):
-            sanitized_cmd = f"( export PYTHONUNBUFFERED=1; set -o pipefail; {cmd} 2>&1 | tail -n 80 )"
+            sanitized_cmd = (
+                f"( export PYTHONUNBUFFERED=1; "
+                f"if (set -o pipefail 2>/dev/null) && set -o pipefail 2>/dev/null; then "
+                f"{cmd} 2>&1 | tail -n 80; "
+                f"else "
+                f"_fifo=$(mktemp -u 2>/dev/null || echo /tmp/argon_fifo_$$.tmp); "
+                f"mkfifo \"$_fifo\" 2>/dev/null || true; "
+                f"if [ -p \"$_fifo\" ]; then "
+                f"({cmd}) >\"$_fifo\" 2>&1 & _pid=$!; tail -n 80 <\"$_fifo\"; wait $_pid; _rc=$?; rm -f \"$_fifo\"; exit $_rc; "
+                f"else {cmd} 2>&1 | tail -n 80; fi; "
+                f"fi )"
+            )
             out = {
                 "decision": "allow",
                 "overwrite": {"CommandLine": sanitized_cmd},
