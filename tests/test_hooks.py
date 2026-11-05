@@ -334,7 +334,7 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         self.assertIn("pipefail", rewritten_fail)
         self.assertIn("PYTHONUNBUFFERED=1", rewritten_fail)
 
-        for shell_bin in ("/bin/zsh", "/bin/sh", "/bin/dash"):
+        for shell_bin in ("/bin/zsh", "/bin/bash", "/bin/sh", "/bin/dash"):
             if os.path.exists(shell_bin):
                 proc = subprocess.run(
                     [shell_bin, "-c", rewritten_fail],
@@ -361,13 +361,18 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         p_pass = self.base_payload()
         p_pass["toolCall"] = {"name": "run_command", "args": {"CommandLine": orig_pass_cmd}}
         rewritten_pass = run_hook("pre_tool_guard.py", p_pass)["overwrite"]["CommandLine"]
-        proc_ok = subprocess.run(
-            ["/bin/zsh", "-c", rewritten_pass],
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        self.assertEqual(proc_ok.returncode, 0)
+        tested_any_pass_shell = False
+        for shell_bin in ("/bin/zsh", "/bin/bash", "/bin/sh", "/bin/dash"):
+            if os.path.exists(shell_bin):
+                proc_ok = subprocess.run(
+                    [shell_bin, "-c", rewritten_pass],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
+                self.assertEqual(proc_ok.returncode, 0)
+                tested_any_pass_shell = True
+        self.assertTrue(tested_any_pass_shell, "At least one installed shell must be available for test_07")
 
     def test_08_compound_commands_and_destructive_gate(self):
         """Compound commands are untouched; destructive/publishing commands return force_ask."""
