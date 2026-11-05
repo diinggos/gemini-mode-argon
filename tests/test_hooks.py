@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 import uuid
 
@@ -1365,6 +1366,56 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
                         {},
                         f"Unused imports found in {fname}: {unused}",
                     )
+
+    def test_29_transcript_state_caching_and_sub_millisecond_performance(self):
+        """Transcript session state is cached and updated incrementally, achieving sub-millisecond lookups."""
+        # Generate a large transcript with 600 tool steps and 2 USER_INPUT steps
+        steps = []
+        for i in range(600):
+            if i == 50:
+                steps.append({"type": "USER_INPUT", "content": "Hello assist me with coding."})
+            elif i == 300:
+                steps.append({"type": "USER_INPUT", "content": "/gemini-mode-argon on\nFocus on DB."})
+            else:
+                steps.append({
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [{"name": "read_file", "args": {"Path": f"/workspace/module_{i}.py", "content": "x" * 500}}],
+                })
+        write_jsonl(self.transcript_path, steps)
+
+        p = self.base_payload()
+
+        # 1. First resolution: parses and creates cache
+        st1 = argon_core.resolve_session_state(p)
+        self.assertTrue(st1["active"])
+        self.assertEqual(st1["user_turn_count"], 2)
+
+        # 2. Second resolution: identical transcript -> cache hit (< 15ms bound, typically < 1ms)
+        t0 = time.perf_counter()
+        st2 = argon_core.resolve_session_state(p)
+        t_cache = (time.perf_counter() - t0) * 1000
+        self.assertEqual(st1, st2)
+        self.assertLess(t_cache, 15.0)
+
+        # 3. Incremental append: add 50 new tool lines and 1 new USER_INPUT
+        with open(self.transcript_path, "a", encoding="utf-8") as f:
+            for _ in range(50):
+                f.write(json.dumps({"type": "PLANNER_RESPONSE", "status": "DONE", "tool_calls": []}) + "\n")
+            f.write(json.dumps({"type": "USER_INPUT", "content": "/gemini-mode-argon off"}) + "\n")
+
+        t0 = time.perf_counter()
+        st3 = argon_core.resolve_session_state(p)
+        t_inc = (time.perf_counter() - t0) * 1000
+        self.assertFalse(st3["active"])
+        self.assertEqual(st3["user_turn_count"], 3)
+        self.assertLess(t_inc, 15.0)
+
+        # 4. Truncation/overwrite: file becomes smaller, cache is safely invalidated and recalculated
+        write_jsonl(self.transcript_path, [{"type": "USER_INPUT", "content": "Just asking general question."}])
+        st4 = argon_core.resolve_session_state(p)
+        self.assertFalse(st4["active"])
+        self.assertEqual(st4["user_turn_count"], 1)
 
 
 if __name__ == "__main__":

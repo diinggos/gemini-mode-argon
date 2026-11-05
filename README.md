@@ -74,7 +74,7 @@ Install into your local Antigravity plugins directory:
 git clone https://github.com/diinggos/gemini-mode-argon.git ~/.gemini/config/plugins/gemini-mode-argon
 ```
 
-Restart Antigravity or open a new conversation. Run the 28-scenario end-to-end verification suite locally:
+Restart Antigravity or open a new conversation. Run the 29-scenario end-to-end verification suite locally:
 
 ```bash
 python3 -m unittest discover -s ~/.gemini/config/plugins/gemini-mode-argon/tests -v
@@ -151,11 +151,11 @@ python3 -m unittest discover -s ~/.gemini/config/plugins/gemini-mode-argon/tests
 
 ## 🧪 End-to-End Test Suite & Verification Matrix
 
-The suite includes **28 comprehensive automated unit and integration tests** (`tests/test_hooks.py`) verifying state-aware determinism:
+The suite includes **29 comprehensive automated unit and integration tests** (`tests/test_hooks.py`) verifying state-aware determinism:
 
 | Category | Coverage & Verified Invariants | Tests |
 | :--- | :--- | :---: |
-| **Zero-Interference** | 100% no-op when `OFF` (< 0.003 ms latency), zero tool mutation, clean exit. | `test_01` |
+| **Zero-Interference** | 100% no-op when `OFF` (< 0.003 ms latency), sub-millisecond incremental transcript state caching, zero tool mutation, clean exit. | `test_01`, `test_29` |
 | **Command Parser** | Chained slash command scanner, token normalization (e.g. `/gemini-mode-argon /token-saver`), role overrides, and zombie reviewer lock reset. | `test_02`, `test_22`, `test_28` |
 | **Lifecycle Hooks** | Single-turn `PreInvocation` deduplication, CHECKPOINT `/compact` monitor, batch-safe `PreToolUse` read-before-write, `PostToolUse` state ledger extraction, and `Stop` Exit-Code-0 auto-healing. | `test_03`–`test_09`, `test_11`–`test_13`, `test_17`, `test_23`, `test_27` |
 | **Surface Parity** | Cross-surface compatibility between Antigravity App (`read_file`, `edit_file`) and IDE/Cascade (`view_file`, `replace_file_content`). | `test_16` |

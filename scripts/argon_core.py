@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Shared state-aware utilities for Gemini Mode Argon v2.7 lifecycle hooks."""
 
+import hashlib
 import json
 import os
 import re
@@ -303,12 +304,35 @@ def apply_slash_commands(clean_text, state):
                 state["active"] = True
 
 
+def resolve_session_cache_path(data):
+    """Resolve an isolated temp cache path for transcript parse state."""
+    tmp_root = tempfile.gettempdir()
+    conv_id = str(data.get("conversationId", "") or "").strip()
+    if conv_id:
+        safe_id = re.sub(r"[^A-Za-z0-9_.-]", "_", conv_id)
+        return os.path.join(tmp_root, f"argon_session_cache_{safe_id}.json")
+    tpath = str(data.get("transcriptPath", "") or "").strip()
+    if tpath:
+        norm = canonical_path(tpath)
+        h = hashlib.sha256(norm.encode("utf-8")).hexdigest()[:16]
+        return os.path.join(tmp_root, f"argon_session_cache_{h}.json")
+    return os.path.join(tmp_root, "argon_session_cache_default.json")
+
+
+def _read_file_header_sample(path, nbytes=64):
+    try:
+        with open(path, "rb") as f:
+            return f.read(nbytes).decode("latin-1", errors="ignore")
+    except Exception:
+        return ""
+
+
 def resolve_session_state(data):
     """Inspect transcript.jsonl & lastUserInput for ON/OFF state, role, level, and CHECKPOINT turns."""
     force_env = os.environ.get("ARGON_FORCE_ACTIVE", "").strip().lower()
     initial_active = force_env in ("1", "true", "on")
 
-    state = {
+    base_state = {
         "active": initial_active,
         "role": "auto",
         "level": "auto",
@@ -318,34 +342,115 @@ def resolve_session_state(data):
     }
 
     if not isinstance(data, dict):
-        return state
+        return base_state
 
     transcript_path = data.get("transcriptPath", "")
     last_transcript_clean = None
 
     if transcript_path and os.path.exists(transcript_path):
         try:
-            with open(transcript_path, "r", encoding="utf-8", errors="ignore") as f:
-                for line in f:
-                    if not line.strip():
-                        continue
-                    try:
-                        step = json.loads(line)
-                    except Exception:
-                        continue
-                    step_type = str(step.get("type", "")).upper()
-                    if step_type == "CHECKPOINT":
-                        # Context compaction occurred: keep active/role/level, reset post-compact turn counter
-                        state["turns_since_checkpoint"] = 0
-                    elif step_type == "USER_INPUT":
-                        raw_content = unwrap_arg(step.get("content", ""))
-                        clean = strip_user_request_wrappers(str(raw_content))
-                        state["user_turn_count"] += 1
-                        state["turns_since_checkpoint"] += 1
-                        last_transcript_clean = clean
-                        apply_slash_commands(clean, state)
+            st = os.stat(transcript_path)
+            file_size = st.st_size
+            file_mtime_ns = st.st_mtime_ns
+            cache_file = resolve_session_cache_path(data)
+            cache = load_json_file(cache_file)
+
+            can_reuse_cache = False
+            can_incremental = False
+
+            if (
+                cache
+                and cache.get("transcript_path") == canonical_path(transcript_path)
+                and isinstance(cache.get("state"), dict)
+            ):
+                cached_size = cache.get("size", -1)
+                cached_mtime_ns = cache.get("mtime_ns", -1)
+                cached_offset = cache.get("parsed_offset", -1)
+                cached_header = cache.get("header_sample", "")
+
+                if cached_size == file_size and cached_mtime_ns == file_mtime_ns:
+                    # Transcript hasn't changed at all: zero disk scan
+                    base_state = dict(cache["state"])
+                    last_transcript_clean = cache.get("last_transcript_clean")
+                    can_reuse_cache = True
+                elif (
+                    file_size > cached_size
+                    and 0 <= cached_offset <= file_size
+                    and cached_header
+                    and _read_file_header_sample(transcript_path, len(cached_header)) == cached_header
+                ):
+                    # Append-only growth: seek directly to previous parsed_offset
+                    base_state = dict(cache["state"])
+                    last_transcript_clean = cache.get("last_transcript_clean")
+                    can_incremental = True
+
+            if not can_reuse_cache:
+                with open(transcript_path, "r", encoding="utf-8", errors="ignore") as f:
+                    if can_incremental:
+                        f.seek(cache.get("parsed_offset", 0))
+                    else:
+                        base_state = {
+                            "active": initial_active,
+                            "role": "auto",
+                            "level": "auto",
+                            "token_saver": False,
+                            "user_turn_count": 0,
+                            "turns_since_checkpoint": 0,
+                        }
+                        last_transcript_clean = None
+
+                    for line in f:
+                        if not line.strip():
+                            continue
+                        # Fast filter: skip json.loads for lines that cannot be USER_INPUT or CHECKPOINT
+                        if (
+                            "USER_INPUT" not in line
+                            and "user_input" not in line
+                            and "CHECKPOINT" not in line
+                            and "checkpoint" not in line
+                        ):
+                            continue
+                        try:
+                            step = json.loads(line)
+                        except Exception:
+                            continue
+                        step_type = str(step.get("type", "")).upper()
+                        if step_type == "CHECKPOINT":
+                            base_state["turns_since_checkpoint"] = 0
+                        elif step_type == "USER_INPUT":
+                            raw_content = unwrap_arg(step.get("content", ""))
+                            clean = strip_user_request_wrappers(str(raw_content))
+                            base_state["user_turn_count"] += 1
+                            base_state["turns_since_checkpoint"] += 1
+                            last_transcript_clean = clean
+                            apply_slash_commands(clean, base_state)
+
+                    new_offset = f.tell()
+
+                header_sample = _read_file_header_sample(transcript_path, 64)
+                new_cache = {
+                    "transcript_path": canonical_path(transcript_path),
+                    "size": file_size,
+                    "mtime_ns": file_mtime_ns,
+                    "parsed_offset": new_offset,
+                    "header_sample": header_sample,
+                    "last_transcript_clean": last_transcript_clean,
+                    "state": {
+                        "active": base_state["active"],
+                        "role": base_state["role"],
+                        "level": base_state["level"],
+                        "token_saver": base_state["token_saver"],
+                        "user_turn_count": base_state["user_turn_count"],
+                        "turns_since_checkpoint": base_state["turns_since_checkpoint"],
+                    },
+                }
+                save_json_file(cache_file, new_cache)
         except Exception:
             pass
+
+    state = dict(base_state)
+    if initial_active:
+        state["active"] = True
 
     last_user_input = data.get("lastUserInput", "")
     if isinstance(last_user_input, str) and last_user_input.strip():

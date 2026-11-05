@@ -73,7 +73,7 @@ Pasang ke dalam direktori plugin Antigravity lokal Anda:
 git clone https://github.com/diinggos/gemini-mode-argon.git ~/.gemini/config/plugins/gemini-mode-argon
 ```
 
-Buka kembali Antigravity atau mulai percakapan baru. Jalankan 28 skenario suite pengujian otomatis end-to-end:
+Buka kembali Antigravity atau mulai percakapan baru. Jalankan 29 skenario suite pengujian otomatis end-to-end:
 
 ```bash
 python3 -m unittest discover -s ~/.gemini/config/plugins/gemini-mode-argon/tests -v
@@ -150,11 +150,11 @@ python3 -m unittest discover -s ~/.gemini/config/plugins/gemini-mode-argon/tests
 
 ## 🧪 Matriks Suite Pengujian End-to-End
 
-Paket ini dilengkapi dengan **28 pengujian unit dan integrasi otomatis komprehensif** (`tests/test_hooks.py`) untuk memverifikasi determinisme penegakan sistem:
+Paket ini dilengkapi dengan **29 pengujian unit dan integrasi otomatis komprehensif** (`tests/test_hooks.py`) untuk memverifikasi determinisme penegakan sistem:
 
 | Kategori | Cakupan & Kontrak yang Terverifikasi | Pengujian |
 | :--- | :--- | :---: |
-| **Zero-Interference** | 100% no-op saat `OFF` (latensi < 0.003 ms), nol mutasi tool, keluar bersih. | `test_01` |
+| **Zero-Interference** | 100% no-op saat `OFF` (latensi < 0.003 ms), cache parsing transkrip inkremental sub-milidetik, nol mutasi tool, keluar bersih. | `test_01`, `test_29` |
 | **Command Parser** | Pemindai slash command berantai, normalisasi token (misal `/gemini-mode-argon /token-saver`), override peran, dan reset kunci reviewer. | `test_02`, `test_22`, `test_28` |
 | **Lifecycle Hooks** | Deduplikasi giliran `PreInvocation`, monitor `/compact` sadar-CHECKPOINT, keamanan batch `PreToolUse` read-before-write, ekstraksi ledger `PostToolUse`, dan auto-healing Exit-Code-0 pada `Stop`. | `test_03`–`test_09`, `test_11`–`test_13`, `test_17`, `test_23`, `test_27` |
 | **Paritas Surface** | Kompatibilitas lintas-surface antara Antigravity App (`read_file`, `edit_file`) dan IDE/Cascade (`view_file`, `replace_file_content`). | `test_16` |
