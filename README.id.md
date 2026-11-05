@@ -148,6 +148,21 @@ python3 -m unittest discover -s ~/.gemini/config/plugins/gemini-mode-argon/tests
 
 ---
 
+## 🧪 Matriks Suite Pengujian End-to-End
+
+Paket ini dilengkapi dengan **28 pengujian unit dan integrasi otomatis komprehensif** (`tests/test_hooks.py`) untuk memverifikasi determinisme penegakan sistem:
+
+| Kategori | Cakupan & Kontrak yang Terverifikasi | Pengujian |
+| :--- | :--- | :---: |
+| **Zero-Interference** | 100% no-op saat `OFF` (latensi < 0.003 ms), nol mutasi tool, keluar bersih. | `test_01` |
+| **Command Parser** | Pemindai slash command berantai, normalisasi token (misal `/gemini-mode-argon /token-saver`), override peran, dan reset kunci reviewer. | `test_02`, `test_22`, `test_28` |
+| **Lifecycle Hooks** | Deduplikasi giliran `PreInvocation`, monitor `/compact` sadar-CHECKPOINT, keamanan batch `PreToolUse` read-before-write, ekstraksi ledger `PostToolUse`, dan auto-healing Exit-Code-0 pada `Stop`. | `test_03`–`test_09`, `test_11`–`test_13`, `test_17`, `test_23`, `test_27` |
+| **Paritas Surface** | Kompatibilitas lintas-surface antara Antigravity App (`read_file`, `edit_file`) dan IDE/Cascade (`view_file`, `replace_file_content`). | `test_16` |
+| **Pengurai Poliglot** | Ekstraksi simbol multibahasa lintas Java, C#, Kotlin, Dart, Python, TS/JS, Go, Rust, Ruby, dan SQL. | `test_24`, `test_26` |
+| **Higiene & Keamanan** | 0 unused import AST, 0 path hardcoded lokal, proteksi perintah destruktif/publish, dan kontras logo dual-theme (skor 100/100). | `test_10`, `test_14`, `test_15`, `test_18`–`test_21`, `test_25` |
+
+---
+
 ## 🧩 Menambahkan Peran Kustom (*Extensibility Guide*)
 
 1. Buat direktori skill baru: `skills/gemini-mode-argon-<peran-baru>/SKILL.md` lengkap dengan YAML frontmatter (`name`, `description`), pola **Universal Triad**, **Response Blueprint (`A`, `B`, atau `C`)**, serta **3–5 poin Pre-Flight Checklist**.
