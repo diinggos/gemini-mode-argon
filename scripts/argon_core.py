@@ -490,8 +490,12 @@ def iter_transcript_tool_events(transcript_path):
             m_fin = BG_TASK_FINISH_RE.search(content)
             if m_fin:
                 raw_tid = m_fin.group(1).strip() if m_fin.group(1) else ""
-                tc_args = bg_tasks.get(raw_tid) if raw_tid else bg_tasks.get("__unkeyed__")
-                if tc_args:
+                task_info = bg_tasks.get(raw_tid) if raw_tid else bg_tasks.get("__unkeyed__")
+                if task_info:
+                    if isinstance(task_info, tuple) and len(task_info) == 3:
+                        launch_step, launch_call_idx, tc_args = task_info
+                    else:
+                        launch_step, launch_call_idx, tc_args = idx, 0, task_info
                     m_exit = EXIT_CODE_RE.search(content)
                     fin_code = None
                     if m_exit:
@@ -500,7 +504,7 @@ def iter_transcript_tool_events(transcript_path):
                         except ValueError:
                             fin_code = None
                     fin_failed = (fin_code is not None and fin_code != 0) or str(step.get("status", "")).upper() == "ERROR"
-                    yield (idx, 0, "run_command", tc_args, fin_failed, fin_code)
+                    yield (launch_step, launch_call_idx, "run_command", tc_args, fin_failed, fin_code)
                     continue
 
         tcs = step.get("tool_calls") or []
@@ -547,9 +551,9 @@ def iter_transcript_tool_events(transcript_path):
                     exit_code = "RUNNING"
                     m_tid = BG_TASK_LAUNCH_RE.search(res_content)
                     if m_tid and m_tid.group(1):
-                        bg_tasks[m_tid.group(1).strip()] = tc_args
+                        bg_tasks[m_tid.group(1).strip()] = (idx, j, tc_args)
                     else:
-                        bg_tasks["__unkeyed__"] = tc_args
+                        bg_tasks["__unkeyed__"] = (idx, j, tc_args)
             else:
                 # Tool call has not yet executed or produced a result in transcript
                 failed = True

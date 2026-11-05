@@ -92,19 +92,6 @@ SHELL_TEE_RE = re.compile(
 SHELL_SED_INPLACE_RE = re.compile(r"\b(?:sed|perl)\s+-[a-zA-Z]*i[^\s]*\b")
 
 
-TEMP_DIR = os.path.realpath(tempfile.gettempdir())
-
-
-def is_scratch_or_temp_path(p, artifact_dir="", conv_id=""):
-    """Return True if path is a scratch, temporary, or conversation artifact file."""
-    canon = canonical_path(p)
-    if not canon:
-        return True
-    if canon == TEMP_DIR or canon.startswith(TEMP_DIR + os.sep):
-        return True
-    return is_artifact_or_scratch_path(canon, artifact_dir, conv_id)
-
-
 def extract_shell_source_edits(cmd_line, artifact_dir="", conv_id=""):
     """Extract source file targets created or modified via run_command."""
     if not isinstance(cmd_line, str) or not cmd_line.strip():
@@ -120,8 +107,9 @@ def extract_shell_source_edits(cmd_line, artifact_dir="", conv_id=""):
             if not p.startswith("&"):
                 ext = os.path.splitext(p)[1].lower()
                 if ext in CODE_EXTENSIONS:
-                    if not is_scratch_or_temp_path(p, artifact_dir, conv_id):
-                        targets.append(canonical_path(p))
+                    canon = canonical_path(p)
+                    if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
+                        targets.append(canon)
 
     # 2. tee [-a] file
     for m in SHELL_TEE_RE.finditer(cmd_line):
@@ -130,32 +118,36 @@ def extract_shell_source_edits(cmd_line, artifact_dir="", conv_id=""):
             p = raw.strip()
             ext = os.path.splitext(p)[1].lower()
             if ext in CODE_EXTENSIONS:
-                if not is_scratch_or_temp_path(p, artifact_dir, conv_id):
-                    targets.append(canonical_path(p))
+                canon = canonical_path(p)
+                if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
+                    targets.append(canon)
 
     # 3. sed -i / perl -i in-place modifications
     if SHELL_SED_INPLACE_RE.search(cmd_line):
         for token in re.findall(r"[\"']?([^\s\"'`;|&]+)[\"']?", cmd_line):
             ext = os.path.splitext(token)[1].lower()
             if ext in CODE_EXTENSIONS:
-                if not is_scratch_or_temp_path(token, artifact_dir, conv_id):
-                    targets.append(canonical_path(token))
+                canon = canonical_path(token)
+                if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
+                    targets.append(canon)
 
     # 4. cp / mv / touch
     if re.search(r"\b(?:cp|mv|touch)\b", cmd_line):
         for token in re.findall(r"[\"']?([^\s\"'`;|&]+)[\"']?", cmd_line):
             ext = os.path.splitext(token)[1].lower()
             if ext in CODE_EXTENSIONS:
-                if not is_scratch_or_temp_path(token, artifact_dir, conv_id):
-                    targets.append(canonical_path(token))
+                canon = canonical_path(token)
+                if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
+                    targets.append(canon)
 
     # 5. python3 -c open('...', 'w')
     for m in re.finditer(r"""open\(\s*['"]([^'"]+)['"]\s*,\s*['"][wa+]""", cmd_line):
         p = m.group(1).strip()
         ext = os.path.splitext(p)[1].lower()
         if ext in CODE_EXTENSIONS:
-            if not is_scratch_or_temp_path(p, artifact_dir, conv_id):
-                targets.append(canonical_path(p))
+            canon = canonical_path(p)
+            if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
+                targets.append(canon)
 
     seen = set()
     deduped = []

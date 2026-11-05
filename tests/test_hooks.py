@@ -1529,6 +1529,42 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         res_ok = run_hook("stop_guard.py", p_stop)
         self.assertEqual(res_ok["decision"], "allow")
 
+        # 4. Background task launched BEFORE source edit -> MUST NOT count as post-edit verification even if it completes afterward!
+        task_pre_id = "test-conv/task-pre"
+        write_jsonl(
+            self.transcript_path,
+            [
+                {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [{"name": "run_command", "args": {"CommandLine": "pytest"}}],
+                },
+                {
+                    "type": "GENERIC",
+                    "status": "RUNNING",
+                    "content": f"Tool is running as a background task with task id: {task_pre_id}",
+                },
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [{"name": "edit_file", "args": {"Path": code_file}}],
+                },
+                {"type": "GENERIC", "status": "DONE", "content": "Edited file."},
+                {
+                    "type": "SYSTEM_MESSAGE",
+                    "status": "DONE",
+                    "content": (
+                        f'<SYSTEM_MESSAGE>\nTask id "{task_pre_id}" finished with result:\n\n'
+                        "The command exited with code 0.\nOutput:\nPASSED\n"
+                    ),
+                },
+            ],
+        )
+        res_pre_launch = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_pre_launch["decision"], "continue")
+        self.assertIn("Argon Deterministic Verification Gate", res_pre_launch["reason"])
+
     def test_28_slash_parser_edge_cases_zombie_reviewer_reset_and_ast_hygiene(self):
         """Verify invalid role-suffix safety, token-saver chaining, zombie reviewer reset, and 0 unused imports."""
         # 1. Invalid role suffix must NOT activate Argon
@@ -1695,7 +1731,8 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         res_verified = run_hook("stop_guard.py", p_stop)
         self.assertEqual(res_verified["decision"], "allow")
 
-        # 3. Non-code shell redirections or temporary files do not require verification
+        # 3. Non-code shell redirections or conversation scratch artifacts do not require verification
+        scratch_file = os.path.join(self.artifact_dir, "scratch", "test_scratch.py")
         steps_temp = [
             {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
             {
@@ -1709,7 +1746,7 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
                     {
                         "name": "run_command",
                         "args": {
-                            "CommandLine": f"echo 'temp script' > {os.path.join(tempfile.gettempdir(), 'temp_test.py')}"
+                            "CommandLine": f"echo 'scratch script' > {scratch_file}"
                         },
                     },
                 ],
