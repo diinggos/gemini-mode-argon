@@ -1653,6 +1653,90 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         self.assertFalse(st4["active"])
         self.assertEqual(st4["user_turn_count"], 1)
 
+    def test_30_shell_source_edits_verification_and_arbitrary_rm_options(self):
+        """Track source file modifications performed via run_command and test arbitrary rm flag order."""
+        # 1. Shell source edit via redirection (printf > app.py) without verification -> stop_guard must block
+        p_stop = self.base_payload()
+        p_stop["terminationReason"] = "NO_TOOL_CALL"
+        app_file = os.path.join(self.workspace_dir, "app_shell_test.py")
+
+        steps = [
+            {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": f"printf 'def test_fn(): pass\\n' > {app_file}"},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+        ]
+        write_jsonl(self.transcript_path, steps)
+
+        res_unverified = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_unverified["decision"], "continue")
+        self.assertIn("Argon Deterministic Verification Gate", res_unverified["reason"])
+
+        # 2. Subsequent step runs verification (pytest) successfully -> stop_guard allows stop
+        steps.extend(
+            [
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [{"name": "run_command", "args": {"CommandLine": "pytest"}}],
+                },
+                {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+            ]
+        )
+        write_jsonl(self.transcript_path, steps)
+        res_verified = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_verified["decision"], "allow")
+
+        # 3. Non-code shell redirections or temporary files do not require verification
+        steps_temp = [
+            {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": "echo 'completed' > output.log"},
+                    },
+                    {
+                        "name": "run_command",
+                        "args": {
+                            "CommandLine": f"echo 'temp script' > {os.path.join(tempfile.gettempdir(), 'temp_test.py')}"
+                        },
+                    },
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+        ]
+        write_jsonl(self.transcript_path, steps_temp)
+        res_temp = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_temp["decision"], "allow")
+
+        # 4. Arbitrary rm option ordering matches destructive gate
+        rm_variants = [
+            "rm --force --recursive /tmp/target",
+            "rm -f -r /tmp/target",
+            "rm -f -R /tmp/target",
+            "rm -v -f --recursive target_dir",
+            "rm --preserve-root -rf /var/data",
+        ]
+        for cmd in rm_variants:
+            p_d = self.base_payload()
+            p_d["toolCall"] = {"name": "run_command", "args": {"CommandLine": cmd}}
+            self.assertEqual(
+                run_hook("pre_tool_guard.py", p_d)["decision"],
+                "force_ask",
+                f"Expected force_ask for: {cmd}",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

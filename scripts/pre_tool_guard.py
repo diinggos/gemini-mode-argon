@@ -31,7 +31,7 @@ DESTRUCTIVE_PATTERNS = [
     r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-z0-9-]+(?:=\S+)?))*\s+push\b",
     r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-z0-9-]+(?:=\S+)?))*\s+reset\s+--hard\b",
     r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-z0-9-]+(?:=\S+)?))*\s+clean\s+(?:-[a-zA-Z]*f|--force)",
-    r"\brm\s+(?:-[a-zA-Z]*r[a-zA-Z]*|--recursive)(?:\s+-[a-zA-Z-]+)*\s+\S+",
+    r"\brm(?:\s+-[a-zA-Z0-9-]+(?:=\S+)?)*\s+(?:-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)\b(?:\s+-[a-zA-Z0-9-]+(?:=\S+)?)*(?:\s+--)?\s+\S+",
     r"\bprisma\s+migrate\s+reset\b",
     r"\bsupabase\s+db\s+reset\b",
     r"\brails\s+db:(?:drop|reset)\b",

@@ -83,6 +83,88 @@ VERIFICATION_EXECUTABLE_RE = re.compile(
 
 COMPOUND_MASKING_RE = re.compile(r"(?:\|\||;|(?:\|(?!\|)))")
 
+SHELL_REDIRECTION_RE = re.compile(
+    r"(?:[0-9]?>>?|&>>?)\s*(?:\"([^\"]+)\"|'([^']+)'|([^\s;&|]+))"
+)
+SHELL_TEE_RE = re.compile(
+    r"\btee\s+(?:-[a-zA-Z]+\s+)*(?:\"([^\"]+)\"|'([^']+)'|([^\s;&|]+))"
+)
+SHELL_SED_INPLACE_RE = re.compile(r"\b(?:sed|perl)\s+-[a-zA-Z]*i[^\s]*\b")
+
+
+TEMP_DIR = os.path.realpath(tempfile.gettempdir())
+
+
+def is_scratch_or_temp_path(p, artifact_dir="", conv_id=""):
+    """Return True if path is a scratch, temporary, or conversation artifact file."""
+    canon = canonical_path(p)
+    if not canon:
+        return True
+    if canon == TEMP_DIR or canon.startswith(TEMP_DIR + os.sep):
+        return True
+    return is_artifact_or_scratch_path(canon, artifact_dir, conv_id)
+
+
+def extract_shell_source_edits(cmd_line, artifact_dir="", conv_id=""):
+    """Extract source file targets created or modified via run_command."""
+    if not isinstance(cmd_line, str) or not cmd_line.strip():
+        return []
+
+    targets = []
+
+    # 1. Shell redirection: >, >>, 1>, 2>, &>, &>>
+    for m in SHELL_REDIRECTION_RE.finditer(cmd_line):
+        raw = m.group(1) or m.group(2) or m.group(3)
+        if raw:
+            p = raw.strip()
+            if not p.startswith("&"):
+                ext = os.path.splitext(p)[1].lower()
+                if ext in CODE_EXTENSIONS:
+                    if not is_scratch_or_temp_path(p, artifact_dir, conv_id):
+                        targets.append(canonical_path(p))
+
+    # 2. tee [-a] file
+    for m in SHELL_TEE_RE.finditer(cmd_line):
+        raw = m.group(1) or m.group(2) or m.group(3)
+        if raw:
+            p = raw.strip()
+            ext = os.path.splitext(p)[1].lower()
+            if ext in CODE_EXTENSIONS:
+                if not is_scratch_or_temp_path(p, artifact_dir, conv_id):
+                    targets.append(canonical_path(p))
+
+    # 3. sed -i / perl -i in-place modifications
+    if SHELL_SED_INPLACE_RE.search(cmd_line):
+        for token in re.findall(r"[\"']?([^\s\"'`;|&]+)[\"']?", cmd_line):
+            ext = os.path.splitext(token)[1].lower()
+            if ext in CODE_EXTENSIONS:
+                if not is_scratch_or_temp_path(token, artifact_dir, conv_id):
+                    targets.append(canonical_path(token))
+
+    # 4. cp / mv / touch
+    if re.search(r"\b(?:cp|mv|touch)\b", cmd_line):
+        for token in re.findall(r"[\"']?([^\s\"'`;|&]+)[\"']?", cmd_line):
+            ext = os.path.splitext(token)[1].lower()
+            if ext in CODE_EXTENSIONS:
+                if not is_scratch_or_temp_path(token, artifact_dir, conv_id):
+                    targets.append(canonical_path(token))
+
+    # 5. python3 -c open('...', 'w')
+    for m in re.finditer(r"""open\(\s*['"]([^'"]+)['"]\s*,\s*['"][wa+]""", cmd_line):
+        p = m.group(1).strip()
+        ext = os.path.splitext(p)[1].lower()
+        if ext in CODE_EXTENSIONS:
+            if not is_scratch_or_temp_path(p, artifact_dir, conv_id):
+                targets.append(canonical_path(p))
+
+    seen = set()
+    deduped = []
+    for t in targets:
+        if t and t not in seen:
+            seen.add(t)
+            deduped.append(t)
+    return deduped
+
 
 def is_verification_command(cmd_line):
     """Return True if cmd_line invokes a verification runner as executable, avoiding argument false positives and exit-code masking."""
@@ -128,6 +210,10 @@ def inspect_code_verification(transcript_path, artifact_dir="", conv_id=""):
                     continue
                 passed = (not failed) and (exit_code is None or exit_code == 0)
                 verifications.append(((step_idx, call_idx), passed, exit_code))
+            elif not failed and (exit_code is None or exit_code == 0):
+                targets = extract_shell_source_edits(cmd, artifact_dir, conv_id)
+                for t in targets:
+                    edits.append(((step_idx, call_idx), t))
 
     if not edits:
         if not verifications:
