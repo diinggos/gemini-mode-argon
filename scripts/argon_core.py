@@ -39,7 +39,7 @@ SLASH_CMD_RE = re.compile(
 )
 
 STANDALONE_TOKEN_SAVER_RE = re.compile(
-    r"^\s*/token-saver(?:\s+(.*))?$",
+    r"^\s*/token-saver(?:-(full|lite|ultra))?(?:\s+(.*))?$",
     re.IGNORECASE,
 )
 
@@ -206,9 +206,12 @@ def apply_slash_commands(clean_text, state):
 
         ts_match = STANDALONE_TOKEN_SAVER_RE.match(raw_line)
         if ts_match:
-            rest_ts = (ts_match.group(1) or "").strip()
-            ts_tokens = [t.rstrip(",.;:!?") for t in rest_ts.split() if t.rstrip(",.;:!?")]
-            if not ts_tokens or ts_tokens[0].lower() in ("on", "auto", "true", "1", "full", "lite", "ultra"):
+            sub_mode = (ts_match.group(1) or "").lower()
+            rest_ts = (ts_match.group(2) or "").strip()
+            ts_tokens = [t.rstrip(",.;:!?").lstrip("/") for t in rest_ts.split() if t.rstrip(",.;:!?")]
+            if sub_mode in ("full", "lite", "ultra"):
+                state["token_saver"] = True
+            elif not ts_tokens or ts_tokens[0].lower() in ("on", "auto", "true", "1", "full", "lite", "ultra"):
                 state["token_saver"] = True
             elif ts_tokens[0].lower() in ("off", "false", "0"):
                 state["token_saver"] = False
@@ -225,7 +228,7 @@ def apply_slash_commands(clean_text, state):
         # Handle role-specific shorthand like /gemini-mode-argon-engineer [on|off|level]
         if role_suffix:
             if role_suffix in (VALID_ROLES - {"auto"}):
-                if tokens and tokens[0].lower() == "off":
+                if tokens and tokens[0].lower().lstrip("/") == "off":
                     state["active"] = False
                     state["role"] = "auto"
                     state["level"] = "auto"
@@ -234,7 +237,7 @@ def apply_slash_commands(clean_text, state):
                 state["active"] = True
                 state["role"] = role_suffix
                 # Continue scanning any trailing parameters like level or token-saver
-                tokens = tokens[1:] if (tokens and tokens[0].lower() == "on") else tokens
+                tokens = tokens[1:] if (tokens and tokens[0].lower().lstrip("/") == "on") else tokens
             else:
                 continue
 
@@ -242,7 +245,7 @@ def apply_slash_commands(clean_text, state):
         i = 0
         consumed_any = False
         while i < len(tokens):
-            tok = tokens[i].lower()
+            tok = tokens[i].lower().lstrip("/")
             if tok == "off":
                 state["active"] = False
                 state["role"] = "auto"
@@ -259,16 +262,16 @@ def apply_slash_commands(clean_text, state):
             elif tok == "role":
                 state["active"] = True
                 consumed_any = True
-                if i + 1 < len(tokens) and tokens[i + 1].lower() in VALID_ROLES:
-                    state["role"] = tokens[i + 1].lower()
+                if i + 1 < len(tokens) and tokens[i + 1].lower().lstrip("/") in VALID_ROLES:
+                    state["role"] = tokens[i + 1].lower().lstrip("/")
                     i += 2
                 else:
                     i += 1
             elif tok == "level":
                 state["active"] = True
                 consumed_any = True
-                if i + 1 < len(tokens) and tokens[i + 1].lower() in VALID_LEVELS:
-                    state["level"] = tokens[i + 1].lower()
+                if i + 1 < len(tokens) and tokens[i + 1].lower().lstrip("/") in VALID_LEVELS:
+                    state["level"] = tokens[i + 1].lower().lstrip("/")
                     i += 2
                 else:
                     i += 1
@@ -278,11 +281,11 @@ def apply_slash_commands(clean_text, state):
                 state["level"] = tok
                 consumed_any = True
                 i += 1
-            elif tok == "token-saver":
+            elif tok in ("token-saver", "tokensaver"):
                 state["active"] = True
                 consumed_any = True
-                if i + 1 < len(tokens) and tokens[i + 1].lower() in TOKEN_SAVER_ARGS:
-                    mode_arg = tokens[i + 1].lower()
+                if i + 1 < len(tokens) and tokens[i + 1].lower().lstrip("/") in TOKEN_SAVER_ARGS:
+                    mode_arg = tokens[i + 1].lower().lstrip("/")
                     state["token_saver"] = mode_arg in ("on", "true", "1", "full", "lite", "ultra", "auto")
                     i += 2
                 else:

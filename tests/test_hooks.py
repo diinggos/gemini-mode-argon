@@ -1314,6 +1314,17 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         self.assertTrue(st_task["active"])
         self.assertEqual(st_task["role"], "dba")
 
+        # 3c. Leading slash normalization for chained /token-saver and /role
+        st_slash = {"active": False, "role": "auto", "level": "auto", "token_saver": False}
+        argon_core.apply_slash_commands("/gemini-mode-argon /token-saver /role /dba", st_slash)
+        self.assertTrue(st_slash["active"])
+        self.assertTrue(st_slash["token_saver"])
+        self.assertEqual(st_slash["role"], "dba")
+
+        st_standalone = {"active": True, "role": "auto", "level": "auto", "token_saver": False}
+        argon_core.apply_slash_commands("/token-saver-full\nPrompt", st_standalone)
+        self.assertTrue(st_standalone["token_saver"])
+
         # 4. AST Static Analysis: 0 unused imports across scripts/ and tests/
         import ast
         for sub in ("scripts", "tests"):
