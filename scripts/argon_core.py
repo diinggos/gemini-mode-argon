@@ -550,6 +550,9 @@ def iter_transcript_tool_events(transcript_path):
                         bg_tasks[m_tid.group(1).strip()] = tc_args
                     else:
                         bg_tasks["__unkeyed__"] = tc_args
+            else:
+                # Tool call has not yet executed or produced a result in transcript
+                failed = True
 
             yield (idx, j, tc_name, tc_args, failed, exit_code)
 

@@ -340,6 +340,33 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         }
         self.assertEqual(run_hook("pre_tool_guard.py", p_sh_diff)["decision"], "allow")
 
+        # Reviewer mode blocks file download writes (curl -o, wget)
+        p_sh_curl = self.base_payload()
+        p_sh_curl["toolCall"] = {
+            "name": "run_command",
+            "args": {"CommandLine": "curl -o app.py https://example.com/app.py"},
+        }
+        res_sh_curl = run_hook("pre_tool_guard.py", p_sh_curl)
+        self.assertEqual(res_sh_curl["decision"], "deny")
+        self.assertIn("Reviewer Gate", res_sh_curl["reason"])
+
+        p_sh_wget = self.base_payload()
+        p_sh_wget["toolCall"] = {
+            "name": "run_command",
+            "args": {"CommandLine": "wget https://example.com/app.py"},
+        }
+        res_sh_wget = run_hook("pre_tool_guard.py", p_sh_wget)
+        self.assertEqual(res_sh_wget["decision"], "deny")
+        self.assertIn("Reviewer Gate", res_sh_wget["reason"])
+
+        # Reviewer mode allows curl to /dev/null for status checks
+        p_sh_devnull = self.base_payload()
+        p_sh_devnull["toolCall"] = {
+            "name": "run_command",
+            "args": {"CommandLine": "curl -s -o /dev/null -w '%{http_code}' https://api.example.com"},
+        }
+        self.assertEqual(run_hook("pre_tool_guard.py", p_sh_devnull)["decision"], "allow")
+
     def test_07_pipefail_test_sanitizer_preserves_exit_codes_and_env_prefix(self):
         """Rewritten test commands MUST return Exit Code != 0 on test failure and 0 on test pass."""
         write_jsonl(
@@ -606,6 +633,30 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         p_bad = self.base_payload()
         p_bad["toolCall"] = {"name": "edit_file", "args": {"Path": bad_new_file}}
         self.assertEqual(run_hook("pre_tool_guard.py", p_bad)["decision"], "deny")
+
+        # Same-batch read and edit for the same file (batched concurrently) must be denied
+        same_batch_file = os.path.join(self.workspace_dir, "same_batch.py")
+        with open(same_batch_file, "w", encoding="utf-8") as f:
+            f.write("val = 10\n")
+        write_jsonl(
+            self.transcript_path,
+            [
+                {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [
+                        {"name": "read_file", "args": {"Path": same_batch_file}},
+                        {"name": "edit_file", "args": {"Path": same_batch_file}},
+                    ],
+                },
+            ],
+        )
+        p_same_batch = self.base_payload()
+        p_same_batch["toolCall"] = {"name": "edit_file", "args": {"Path": same_batch_file}}
+        res_same_batch = run_hook("pre_tool_guard.py", p_same_batch)
+        self.assertEqual(res_same_batch["decision"], "deny")
+        self.assertIn("has not been inspected", res_same_batch["reason"])
 
     def test_12_stop_guard_blocks_premature_stop_on_failing_test_exit_code(self):
         """Stop guard MUST block stopping when pytest ran with status=DONE but 'Command exited with code 1.'."""
@@ -952,6 +1003,34 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         res_echo = run_hook("stop_guard.py", p_stop)
         self.assertEqual(res_echo["decision"], "continue")
         self.assertIn("have not been verified", res_echo["reason"])
+
+        # 6. Compound commands masking exit codes (e.g. pytest || echo ignored) must NOT count as verification
+        code_file_compound = os.path.join(self.workspace_dir, "compound_check.py")
+        write_jsonl(
+            self.transcript_path,
+            [
+                {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [
+                        {"name": "edit_file", "args": {"Path": code_file_compound}},
+                    ],
+                },
+                {"type": "GENERIC", "status": "DONE", "content": "Made 1 replacement"},
+                {
+                    "type": "PLANNER_RESPONSE",
+                    "status": "DONE",
+                    "tool_calls": [
+                        {"name": "run_command", "args": {"CommandLine": "pytest || echo ignored"}},
+                    ],
+                },
+                {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+            ],
+        )
+        res_compound = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_compound["decision"], "continue")
+        self.assertIn("have not been verified", res_compound["reason"])
 
     def test_18_polyglot_test_runners_and_git_global_flags(self):
         """Verify .NET/Ruby/PHP/Swift/C++ test runners and git -C / recursive rm destructive patterns."""

@@ -81,22 +81,29 @@ VERIFICATION_EXECUTABLE_RE = re.compile(
     re.IGNORECASE,
 )
 
-CMD_SPLIT_RE = re.compile(r"[;&|\n]+")
+COMPOUND_MASKING_RE = re.compile(r"(?:\|\||;|(?:\|(?!\|)))")
 
 
 def is_verification_command(cmd_line):
-    """Return True if cmd_line invokes a verification runner as executable, avoiding argument false positives."""
+    """Return True if cmd_line invokes a verification runner as executable, avoiding argument false positives and exit-code masking."""
     if not isinstance(cmd_line, str) or not cmd_line.strip():
         return False
-    segments = CMD_SPLIT_RE.split(cmd_line)
-    for seg in segments:
-        s = seg.strip().lstrip("(").rstrip(")").strip()
-        if not s:
-            continue
+
+    s = cmd_line.strip()
+
+    # Check if this is the argon pipefail/tempfile sanitized test wrapper
+    if s.startswith("(") and s.endswith(")") and "export PYTHONUNBUFFERED=1" in s:
         core = ENV_PREFIX_RE.sub("", s).strip()
-        if VERIFICATION_EXECUTABLE_RE.match(core):
-            return True
-    return False
+        return bool(VERIFICATION_EXECUTABLE_RE.search(core))
+
+    # Reject compound commands containing chaining (||, ;) or un-sanitized pipelines (|)
+    # which can swallow or mask non-zero test failure exit codes
+    if COMPOUND_MASKING_RE.search(s):
+        return False
+
+    s = s.lstrip("(").rstrip(")").strip()
+    core = ENV_PREFIX_RE.sub("", s).strip()
+    return bool(VERIFICATION_EXECUTABLE_RE.match(core))
 
 
 def inspect_code_verification(transcript_path, artifact_dir="", conv_id=""):

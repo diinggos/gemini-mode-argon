@@ -76,6 +76,8 @@ REVIEWER_SHELL_MUTATION_RE = re.compile(
     r"|\b(?:poetry|uv|cargo)\s+add\b"
     r"|\bgit\s+(?:commit|checkout|restore|merge|rebase|cherry-pick|revert|apply)\b"
     r"|\b(?:python3?|node|ruby|perl|bash|sh|zsh)\s+-[ce]\b"
+    r"|\bcurl\s+(?:.*?\s+)?(?:-[a-zA-Z]*[oO]|--output)\s+(?!(?:/dev/null|/tmp/|\$TMPDIR)\b)"
+    r"|\bwget\s+(?!(?:-O\s*(?:/dev/null|/tmp/|\$TMPDIR))\b)"
     r")",
     re.IGNORECASE,
 )
@@ -92,7 +94,7 @@ def is_pure_single_test_command(cmd):
 
 
 def has_prior_valid_touch(transcript_path, canon_target, ledger_path):
-    """Check if canon_target was previously read or newly created in this session (batch-safe)."""
+    """Check if canon_target was previously read in an earlier completed step or newly created."""
     if not canon_target:
         return False
 
@@ -102,15 +104,26 @@ def has_prior_valid_touch(transcript_path, canon_target, ledger_path):
         return True
 
     # 2. Inspect conversation transcript with exact 1-to-1 parallel tool batch mapping
-    for _idx, _j, tc_name, tc_args, failed, _code in iter_transcript_tool_events(transcript_path):
+    events = list(iter_transcript_tool_events(transcript_path))
+    edit_step_indices = {
+        step_idx
+        for step_idx, _j, tc_name, tc_args, _failed, _code in events
+        if tc_name in EDIT_TOOL_NAMES
+        and canonical_path(extract_tool_target_path(tc_name, tc_args)) == canon_target
+    }
+
+    for step_idx, _j, tc_name, tc_args, failed, _code in events:
         if failed:
             continue
+        target = canonical_path(extract_tool_target_path(tc_name, tc_args))
+        if target != canon_target:
+            continue
         if tc_name in READ_TOOL_NAMES:
-            if canonical_path(extract_tool_target_path(tc_name, tc_args)) == canon_target:
+            # Read must be completed in an earlier step, not batched with an edit for the same file
+            if step_idx not in edit_step_indices:
                 return True
         elif tc_name in WRITE_TOOL_NAMES and is_pure_new_file_creation(tc_name, tc_args):
-            if canonical_path(extract_tool_target_path(tc_name, tc_args)) == canon_target:
-                return True
+            return True
 
     return False
 
