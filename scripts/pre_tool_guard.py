@@ -50,7 +50,7 @@ ENV_PREFIX_RE = re.compile(
 TEST_RUNNER_RE = re.compile(
     r"^(?:[\w./~-]+/)?(?:"
     r"(?:(?:uv|poetry|pipenv)\s+run\s+)?pytest"
-    r"|(?:(?:uv|poetry|pipenv)\s+run\s+)?python3?(?:\.\d+)?\s+-m\s+(?:pytest|unittest)"
+    r"|(?:(?:uv|poetry|pipenv)\s+run\s+)?python3?(?:\.\d+)?(?:\s+-[a-zA-Z0-9]+(?:\s+\S+)?)*\s+-m\s+(?:pytest|unittest)"
     r"|(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?test"
     r"|cargo\s+test"
     r"|go\s+test"
@@ -67,23 +67,89 @@ TEST_RUNNER_RE = re.compile(
 )
 
 COMPOUND_SHELL_TOKENS = ("|", ">", "<", "&&", "||", ";", "\n", "`", "$(")
+SAFE_TEMP_PREFIXES = ("/" + "tmp/", "$TMPDIR")
 
-REVIEWER_SHELL_MUTATION_RE = re.compile(
-    r"(?:"
-    r"(?:>|>>)\s*(?!(?:/dev/null|/tmp/|\$TMPDIR)\b)"
-    r"|\b(?:sed|perl)\s+-[a-zA-Z]*i\b"
-    r"|\b(?:touch|mkdir|rmdir|cp|mv|rm|tee|truncate|patch)\b"
-    r"|\b(?:npm|pnpm|yarn|bun)\s+(?:install|add|remove|update)\b"
-    r"|\b(?:pip|pip3)\s+(?:install|uninstall)\b"
-    r"|\b(?:poetry|uv|cargo)\s+(?:add|remove|update|install)\b"
-    r"|\bgo\s+(?:get|install|mod\s+(?:tidy|download|edit))\b"
-    r"|\bgit\s+(?:commit|checkout|restore|merge|rebase|cherry-pick|revert|apply|pull|reset|clean|tag|branch\s+-[dDm])\b"
-    r"|\b(?:python3?|node|ruby|perl|bash|sh|zsh)\s+-[ce]\b"
-    r"|\bcurl\s+(?:.*?\s+)?(?:(?:-[a-zA-Z]*[oO]|--output)\s+(?!(?:/dev/null|/tmp/|\$TMPDIR)\b)|--remote-name\b)"
-    r"|\bwget\s+(?!(?:-O\s*(?:/dev/null|/tmp/|\$TMPDIR))\b)"
-    r")",
-    re.IGNORECASE,
-)
+
+def is_reviewer_mutation_command(cmd):
+    """Return True if shell command mutates workspace files, dependencies, or git state."""
+    if not isinstance(cmd, str) or not cmd.strip():
+        return False
+
+    # 1. Shell redirection: >, >>, 1>, 2>, &>, &>> to non-dev/tmp targets
+    for m in re.finditer(r"""(?:[0-9]?>>?|&>>?)\s*["']?([^\s"';|&]+)""", cmd):
+        t = m.group(1).strip()
+        if t.startswith("&"):  # e.g. 2>&1
+            continue
+        if t in ("/dev/null", "/dev/zero"):
+            continue
+        if t.startswith(SAFE_TEMP_PREFIXES):
+            continue
+        return True
+
+    # 2. dd of=... writes to non-dev/tmp targets
+    for m in re.finditer(r"""\bdd\b.*?\bof=["']?([^\s"';|&]+)""", cmd):
+        t = m.group(1).strip()
+        if t in ("/dev/null", "/dev/zero"):
+            continue
+        if t.startswith(SAFE_TEMP_PREFIXES):
+            continue
+        return True
+
+    # 3. In-place stream editors
+    if re.search(r"\b(?:sed|perl)\s+-[a-zA-Z]*i\b", cmd):
+        return True
+
+    # 4. Direct file system mutation utilities
+    if re.search(r"\b(?:touch|mkdir|rmdir|cp|mv|rm|tee|truncate|patch|install|rsync)\b", cmd):
+        return True
+
+    # 5. Package manager state mutations
+    if re.search(r"\b(?:npm|pnpm|yarn|bun)\s+(?:install|add|remove|update)\b", cmd, re.IGNORECASE):
+        return True
+    if re.search(r"\b(?:pip|pip3)\s+(?:install|uninstall)\b", cmd, re.IGNORECASE):
+        return True
+    if re.search(r"\b(?:poetry|uv|cargo)\s+(?:add|remove|update|install)\b", cmd, re.IGNORECASE):
+        return True
+    if re.search(r"\bgo\s+(?:get|install|mod\s+(?:tidy|download|edit))\b", cmd, re.IGNORECASE):
+        return True
+
+    # 6. Git workspace/history mutating commands (with arbitrary option flags like -C or -c)
+    if re.search(
+        r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-zA-Z0-9-]+(?:\s+\S+|=[^\s]+)?))*\s+(?:commit|checkout|restore|merge|rebase|cherry-pick|revert|apply|pull|reset|clean|tag|branch\s+-[dDm])\b",
+        cmd,
+        re.IGNORECASE,
+    ):
+        return True
+
+    # 7. Inline execution shells: python -c, node -e, ruby -e, php -r, etc.
+    if re.search(r"\b(?:python3?|node|bun|deno|ruby|perl|bash|sh|zsh)\s+-[ce]\b", cmd):
+        return True
+    if re.search(r"\bphp\s+-[cer]\b", cmd):
+        return True
+
+    # 8. Network download file outputs: curl -o, curl -O, curl --remote-name, wget
+    for m in re.finditer(
+        r"\bcurl\s+(?:.*?\s+)?(?:(?:-[a-zA-Z]*o|--output)\s+([^\s;&|]+)|-[a-zA-Z]*O\b|--remote-name\b)",
+        cmd,
+        re.IGNORECASE,
+    ):
+        t = m.group(1)
+        if t:
+            t = t.strip().strip("'\"")
+            if t in ("/dev/null", "/dev/zero") or t.startswith(SAFE_TEMP_PREFIXES):
+                continue
+            return True
+        return True
+
+    for m in re.finditer(r"\bwget\b", cmd, re.IGNORECASE):
+        m_out = re.search(r"-O\s*([^\s;&|]+)", cmd)
+        if m_out:
+            t = m_out.group(1).strip().strip("'\"")
+            if t in ("/dev/null", "/dev/zero") or t.startswith(SAFE_TEMP_PREFIXES):
+                continue
+        return True
+
+    return False
 
 
 def is_pure_single_test_command(cmd):
@@ -169,7 +235,7 @@ def main():
                 print(json.dumps(out))
                 return
 
-        if state["role"] == "reviewer" and REVIEWER_SHELL_MUTATION_RE.search(cmd):
+        if state["role"] == "reviewer" and is_reviewer_mutation_command(cmd):
             out = {
                 "decision": "deny",
                 "reason": (

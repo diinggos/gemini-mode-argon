@@ -75,7 +75,7 @@ VERIFICATION_RUNNER_PATTERN = (
     r"|\bswift\s+(?:test|build)\b"
     r"|\bcmake\s+--build\b"
     r"|\bmake\s+(?:test|check|build)\b"
-    r"|python3?(?:\.\d+)?\s+(?:-m\s+(?:pytest|unittest|py_compile|doctest)|\S*(?:test|audit|verify)\S*\.py)\b"
+    r"|python3?(?:\.\d+)?(?:\s+-[a-zA-Z0-9]+(?:\s+\S+)?)*\s+(?:-m\s+(?:pytest|unittest|py_compile|doctest)|\S*(?:test|audit|verify)\S*\.py)\b"
     r"|(?:bash|sh|zsh)\s+-n\b"
     r"|\bEXPLAIN\b"
     r")"
@@ -83,10 +83,6 @@ VERIFICATION_RUNNER_PATTERN = (
 
 VERIFICATION_EXECUTABLE_RE = re.compile(
     r"^(?:[\w./~-]+/)?" + VERIFICATION_RUNNER_PATTERN,
-    re.IGNORECASE,
-)
-VERIFICATION_RUNNER_UNANCHORED_RE = re.compile(
-    r"\b" + VERIFICATION_RUNNER_PATTERN,
     re.IGNORECASE,
 )
 
@@ -140,8 +136,8 @@ def extract_shell_source_edits(cmd_line, artifact_dir="", conv_id=""):
                 if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
                     targets.append(canon)
 
-    # 4. cp / mv / touch
-    if re.search(r"\b(?:cp|mv|touch)\b", cmd_line):
+    # 4. cp / mv / touch / install / rsync
+    if re.search(r"\b(?:cp|mv|touch|install|rsync)\b", cmd_line):
         for token in re.findall(r"[\"']?([^\s\"'`;|&]+)[\"']?", cmd_line):
             ext = os.path.splitext(token)[1].lower()
             if ext in CODE_EXTENSIONS:
@@ -151,7 +147,7 @@ def extract_shell_source_edits(cmd_line, artifact_dir="", conv_id=""):
 
     # 5. curl -o file / curl --output file
     for m in re.finditer(r"\bcurl\s+(?:.*?\s+)?(?:-[a-zA-Z]*o|--output)\s+([^\s;&|]+)", cmd_line, re.IGNORECASE):
-        p = m.group(1).strip()
+        p = m.group(1).strip().strip("'\"")
         ext = os.path.splitext(p)[1].lower()
         if ext in CODE_EXTENSIONS:
             canon = canonical_path(p)
@@ -160,6 +156,15 @@ def extract_shell_source_edits(cmd_line, artifact_dir="", conv_id=""):
 
     # 6. wget -O file
     for m in re.finditer(r"\bwget\s+(?:.*?\s+)?-O\s*([^\s;&|]+)", cmd_line, re.IGNORECASE):
+        p = m.group(1).strip().strip("'\"")
+        ext = os.path.splitext(p)[1].lower()
+        if ext in CODE_EXTENSIONS:
+            canon = canonical_path(p)
+            if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
+                targets.append(canon)
+
+    # 7. dd of=file
+    for m in re.finditer(r"""\bdd\b.*?\bof=["']?([^\s"';|&]+)""", cmd_line):
         p = m.group(1).strip()
         ext = os.path.splitext(p)[1].lower()
         if ext in CODE_EXTENSIONS:
@@ -167,8 +172,50 @@ def extract_shell_source_edits(cmd_line, artifact_dir="", conv_id=""):
             if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
                 targets.append(canon)
 
-    # 7. python3 -c / node -e file writes
-    for m in re.finditer(r"""(?:open|writeFileSync|writeFile)\(\s*['"]([^'"]+)['"]\s*,\s*['"][wa+]""", cmd_line):
+    # 8. Python open / Path writes
+    for m in re.finditer(r"""\bopen\(\s*["']([^"']+)["']\s*,\s*(?:mode=)?["'][wa+]""", cmd_line):
+        p = m.group(1).strip()
+        ext = os.path.splitext(p)[1].lower()
+        if ext in CODE_EXTENSIONS:
+            canon = canonical_path(p)
+            if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
+                targets.append(canon)
+
+    for m in re.finditer(r"""\bPath\(\s*["']([^"']+)["']\s*\)\.write_(?:text|bytes)\(""", cmd_line):
+        p = m.group(1).strip()
+        ext = os.path.splitext(p)[1].lower()
+        if ext in CODE_EXTENSIONS:
+            canon = canonical_path(p)
+            if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
+                targets.append(canon)
+
+    # 9. Node / JS file writes (writeFileSync, writeFile, Bun.write, Deno.writeTextFile)
+    for m in re.finditer(r"""\b(?:fs(?:\.promises)?\.)?(?:writeFileSync|writeFile)\(\s*["']([^"']+)["']""", cmd_line):
+        p = m.group(1).strip()
+        ext = os.path.splitext(p)[1].lower()
+        if ext in CODE_EXTENSIONS:
+            canon = canonical_path(p)
+            if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
+                targets.append(canon)
+
+    for m in re.finditer(r"""\b(?:Bun\.write|Deno\.write(?:Text)?File(?:Sync)?)\(\s*["']([^"']+)["']""", cmd_line):
+        p = m.group(1).strip()
+        ext = os.path.splitext(p)[1].lower()
+        if ext in CODE_EXTENSIONS:
+            canon = canonical_path(p)
+            if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
+                targets.append(canon)
+
+    # 10. Ruby & PHP file writes
+    for m in re.finditer(r"""\bFile\.write\(\s*["']([^"']+)["']""", cmd_line):
+        p = m.group(1).strip()
+        ext = os.path.splitext(p)[1].lower()
+        if ext in CODE_EXTENSIONS:
+            canon = canonical_path(p)
+            if not is_artifact_or_scratch_path(canon, artifact_dir, conv_id):
+                targets.append(canon)
+
+    for m in re.finditer(r"""\bfile_put_contents\(\s*["']([^"']+)["']""", cmd_line):
         p = m.group(1).strip()
         ext = os.path.splitext(p)[1].lower()
         if ext in CODE_EXTENSIONS:
@@ -207,10 +254,7 @@ def is_verification_command(cmd_line):
         if m_inner:
             inner_cmd = m_inner.group(1).strip()
             return is_verification_command(inner_cmd)
-        core = ENV_PREFIX_RE.sub("", s).strip()
-        if NO_RUN_FLAGS_RE.search(core) or WATCH_FLAGS_RE.search(core):
-            return False
-        return bool(VERIFICATION_RUNNER_UNANCHORED_RE.search(core))
+        return False
 
     # Reject compound commands containing chaining (||, ;) or un-sanitized pipelines (|)
     # which can swallow or mask non-zero test failure exit codes

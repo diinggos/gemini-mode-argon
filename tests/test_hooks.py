@@ -1990,6 +1990,112 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         self.assertEqual(res_stop_watch["decision"], "continue")
         self.assertIn("Argon Deterministic Verification Gate", res_stop_watch["reason"])
 
+    def test_32_reviewer_dd_writes_unparsed_wrappers_and_node_payload_tracking(self):
+        """Block dd of= writes in reviewer mode, reject unparsed wrapper no-ops, and track Node/dd payloads as edits."""
+        # 1. Reviewer mode MUST block dd of= writes to workspace, while allowing harmless /dev/null or /tmp/ writes
+        p_rev_dd = self.base_payload()
+        p_rev_dd["lastUserInput"] = "/gemini-mode-argon reviewer"
+        p_rev_dd["toolCall"] = {
+            "name": "run_command",
+            "args": {"CommandLine": "dd if=/dev/zero of=app.py bs=1 count=1"},
+        }
+        res_dd = run_hook("pre_tool_guard.py", p_rev_dd)
+        self.assertEqual(res_dd["decision"], "deny")
+        self.assertIn("Argon Reviewer Gate", res_dd["reason"])
+
+        # Quoted of="app.py" must also be blocked
+        p_rev_dd["toolCall"]["args"]["CommandLine"] = 'dd if=/dev/zero of="app.py" bs=1 count=1'
+        res_dd_q = run_hook("pre_tool_guard.py", p_rev_dd)
+        self.assertEqual(res_dd_q["decision"], "deny")
+
+        # Harmless dd to /dev/null or /tmp/ must be allowed in reviewer mode
+        p_rev_dd["toolCall"]["args"]["CommandLine"] = "dd if=app.py of=/dev/null"
+        res_dd_null = run_hook("pre_tool_guard.py", p_rev_dd)
+        self.assertEqual(res_dd_null["decision"], "allow")
+
+        tmp_out = os.path.join(self.tmpdir, "test.bin")
+        p_rev_dd["toolCall"]["args"]["CommandLine"] = f"dd if=/dev/zero of={tmp_out} count=1"
+        res_dd_tmp = run_hook("pre_tool_guard.py", p_rev_dd)
+        self.assertEqual(res_dd_tmp["decision"], "allow")
+
+        # 2. Stop guard MUST reject unparsed wrapper no-ops as verification
+        app_file = os.path.join(self.workspace_dir, "app_unparsed.py")
+        p_stop = self.base_payload()
+        p_stop["terminationReason"] = "NO_TOOL_CALL"
+        steps_unparsed = [
+            {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": f"printf 'a = 1\\n' > {app_file}"},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": "( export PYTHONUNBUFFERED=1; echo pytest )"},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "pytest\nCommand exited with code 0."},
+        ]
+        write_jsonl(self.transcript_path, steps_unparsed)
+        res_unparsed = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_unparsed["decision"], "continue")
+        self.assertIn("Argon Deterministic Verification Gate", res_unparsed["reason"])
+
+        # 3. Stop guard MUST track Node writeFileSync payloads as source edits
+        app_file_node = os.path.join(self.workspace_dir, "app_node.py")
+        steps_node = [
+            {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {
+                            "CommandLine": f"node -e \"require('fs').writeFileSync('{app_file_node}', 'print(1)')\""
+                        },
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+        ]
+        write_jsonl(self.transcript_path, steps_node)
+        res_node = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_node["decision"], "continue")
+        self.assertIn("Argon Deterministic Verification Gate", res_node["reason"])
+
+        # 4. Stop guard MUST track dd of= file writes as source edits
+        app_file_dd = os.path.join(self.workspace_dir, "app_dd.py")
+        steps_dd = [
+            {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": f"dd if=/dev/zero of={app_file_dd} bs=1 count=1"},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "1+0 records in\nCommand exited with code 0."},
+        ]
+        write_jsonl(self.transcript_path, steps_dd)
+        res_dd_stop = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_dd_stop["decision"], "continue")
+        self.assertIn("Argon Deterministic Verification Gate", res_dd_stop["reason"])
+
 
 if __name__ == "__main__":
     unittest.main()
