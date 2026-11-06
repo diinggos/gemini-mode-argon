@@ -128,26 +128,31 @@ def is_reviewer_mutation_command(cmd):
         return True
 
     # 8. Network download file outputs: curl -o, curl -O, curl --remote-name, wget
-    for m in re.finditer(
-        r"\bcurl\s+(?:.*?\s+)?(?:(?:-[a-zA-Z]*o|--output)\s+([^\s;&|]+)|-[a-zA-Z]*O\b|--remote-name\b)",
-        cmd,
-        re.IGNORECASE,
-    ):
-        t = m.group(1)
-        if t:
-            t = t.strip().strip("'\"")
-            if t in ("/dev/null", "/dev/zero") or t.startswith(SAFE_TEMP_PREFIXES):
-                continue
-            return True
-        return True
+    subcmds = re.split(r"(?:&&|\|\||;|\||\n)", cmd)
+    for sub in subcmds:
+        sub = sub.strip()
+        if not sub:
+            continue
 
-    for m in re.finditer(r"\bwget\b", cmd, re.IGNORECASE):
-        m_out = re.search(r"-O\s*([^\s;&|]+)", cmd)
-        if m_out:
-            t = m_out.group(1).strip().strip("'\"")
-            if t in ("/dev/null", "/dev/zero") or t.startswith(SAFE_TEMP_PREFIXES):
-                continue
-        return True
+        # Check wget in this specific sub-command
+        if re.search(r"\bwget\b", sub, re.IGNORECASE):
+            m_out = re.search(r"-O\s*([^\s;&|]+)", sub)
+            if m_out:
+                t = m_out.group(1).strip().strip("'\"")
+                if not (t in ("/dev/null", "/dev/zero") or t.startswith(SAFE_TEMP_PREFIXES)):
+                    return True
+            else:
+                return True
+
+        # Check curl in this specific sub-command
+        if re.search(r"\bcurl\b", sub, re.IGNORECASE):
+            if re.search(r"(?:^|\s)(?:-[a-zA-Z]*O\b|--remote-name\b)", sub):
+                return True
+            m_out = re.search(r"(?:-[a-zA-Z]*o|--output)\s+([^\s;&|]+)", sub)
+            if m_out:
+                t = m_out.group(1).strip().strip("'\"")
+                if not (t in ("/dev/null", "/dev/zero") or t.startswith(SAFE_TEMP_PREFIXES)):
+                    return True
 
     return False
 
