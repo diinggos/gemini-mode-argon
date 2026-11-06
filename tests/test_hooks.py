@@ -2109,6 +2109,39 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         self.assertEqual(res_dd_stop["decision"], "continue")
         self.assertIn("Argon Deterministic Verification Gate", res_dd_stop["reason"])
 
+        # 5. Reviewer mode MUST block Node long-form --eval
+        p_rev_node = self.base_payload()
+        p_rev_node["lastUserInput"] = "/gemini-mode-argon reviewer"
+        p_rev_node["toolCall"] = {
+            "name": "run_command",
+            "args": {"CommandLine": "node --eval=\"require('fs').writeFileSync('app.py','x')\""},
+        }
+        res_rev_node = run_hook("pre_tool_guard.py", p_rev_node)
+        self.assertEqual(res_rev_node["decision"], "deny")
+        self.assertIn("Argon Reviewer Gate", res_rev_node["reason"])
+
+        # 6. Stop guard MUST track .css file edits as source edits requiring verification
+        css_file = os.path.join(self.workspace_dir, "styles.css")
+        steps_css = [
+            {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "write_file",
+                        "args": {"Path": css_file, "Content": "body { color: red; }"},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "File created."},
+        ]
+        write_jsonl(self.transcript_path, steps_css)
+        res_css_stop = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_css_stop["decision"], "continue")
+        self.assertIn("Argon Deterministic Verification Gate", res_css_stop["reason"])
+        self.assertIn("styles.css", res_css_stop["reason"])
+
 
 if __name__ == "__main__":
     unittest.main()

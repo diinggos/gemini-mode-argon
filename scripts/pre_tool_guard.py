@@ -121,10 +121,16 @@ def is_reviewer_mutation_command(cmd):
     ):
         return True
 
-    # 7. Inline execution shells: python -c, node -e, ruby -e, php -r, etc.
-    if re.search(r"\b(?:python3?|node|bun|deno|ruby|perl|bash|sh|zsh)\s+-[ce]\b", cmd):
-        return True
-    if re.search(r"\bphp\s+-[cer]\b", cmd):
+    # 7. Inline execution shells: python -c, node -e / --eval, ruby -e, php -r, etc.
+    if re.search(
+        r"(?:"
+        r"\b(?:node|bun|deno)\s+(?:--eval\b|--eval=|--print\b|--print=|-e\b|-p\b|eval\b)"
+        r"|\b(?:python3?|ruby|perl|bash|sh|zsh)\s+-[ceE]\b"
+        r"|\bphp\s+(?:-[cerBRF]\b|--run\b)"
+        r")",
+        cmd,
+        re.IGNORECASE,
+    ):
         return True
 
     # 8. Network download file outputs: curl -o, curl -O, curl --remote-name, wget

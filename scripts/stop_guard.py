@@ -54,6 +54,11 @@ CODE_EXTENSIONS = {
     ".sql",
     ".vue",
     ".svelte",
+    ".css",
+    ".scss",
+    ".sass",
+    ".less",
+    ".html",
 }
 
 ENV_PREFIX_RE = re.compile(r"^(?:[A-Za-z_][A-Za-z0-9_]*=(?:\"[^\"]*\"|'[^']*'|[^\s]+)\s+)+")
