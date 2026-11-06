@@ -2142,6 +2142,39 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         self.assertIn("Argon Deterministic Verification Gate", res_css_stop["reason"])
         self.assertIn("styles.css", res_css_stop["reason"])
 
+        # 7. Stop guard MUST require explicit zero exit status (rejecting None exit_code verification as passing)
+        app_file_no_code = os.path.join(self.workspace_dir, "app_no_exit_code.py")
+        steps_no_exit_code = [
+            {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": f"printf 'x = 10\\n' > {app_file_no_code}"},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": "pytest tests/test_calc.py"},
+                    }
+                ],
+            },
+            # Result is DONE but has NO 'Command exited with code N' string (exit_code is None)
+            {"type": "GENERIC", "status": "DONE", "content": "Running test suite..."},
+        ]
+        write_jsonl(self.transcript_path, steps_no_exit_code)
+        res_no_code = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_no_code["decision"], "continue")
+        self.assertIn("Argon Reflexion Auto-Healing Gate", res_no_code["reason"])
+
 
 if __name__ == "__main__":
     unittest.main()

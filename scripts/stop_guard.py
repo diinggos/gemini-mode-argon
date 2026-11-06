@@ -291,7 +291,7 @@ def inspect_code_verification(transcript_path, artifact_dir="", conv_id=""):
             if is_verification_command(cmd):
                 if exit_code == "RUNNING":
                     continue
-                passed = (not failed) and (exit_code is None or exit_code == 0)
+                passed = (not failed) and (exit_code == 0)
                 verifications.append(((step_idx, call_idx), passed, exit_code))
             elif not failed and (exit_code is None or exit_code == 0):
                 targets = extract_shell_source_edits(cmd, artifact_dir, conv_id)
