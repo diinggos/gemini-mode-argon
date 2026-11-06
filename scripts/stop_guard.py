@@ -14,6 +14,7 @@ if SCRIPT_DIR not in sys.path:
 from argon_core import (  # noqa: E402
     MUTATION_TOOL_NAMES,
     NO_RUN_FLAGS_RE,
+    WATCH_FLAGS_RE,
     canonical_path,
     extract_tool_target_path,
     is_artifact_or_scratch_path,
@@ -195,6 +196,10 @@ def is_verification_command(cmd_line):
     if NO_RUN_FLAGS_RE.search(s):
         return False
 
+    # Reject watch mode runners which do not perform non-interactive deterministic verification
+    if WATCH_FLAGS_RE.search(s):
+        return False
+
     # Check if this is the argon pipefail/tempfile sanitized test wrapper
     if s.startswith("(") and s.endswith(")") and "export PYTHONUNBUFFERED=1" in s:
         # Extract inner command between 'then ' and ' 2>&1 | tail'
@@ -203,7 +208,7 @@ def is_verification_command(cmd_line):
             inner_cmd = m_inner.group(1).strip()
             return is_verification_command(inner_cmd)
         core = ENV_PREFIX_RE.sub("", s).strip()
-        if NO_RUN_FLAGS_RE.search(core):
+        if NO_RUN_FLAGS_RE.search(core) or WATCH_FLAGS_RE.search(core):
             return False
         return bool(VERIFICATION_RUNNER_UNANCHORED_RE.search(core))
 

@@ -15,6 +15,7 @@ from argon_core import (  # noqa: E402
     MUTATION_TOOL_NAMES,
     NO_RUN_FLAGS_RE,
     READ_TOOL_NAMES,
+    WATCH_FLAGS_RE,
     WRITE_TOOL_NAMES,
     canonical_path,
     extract_tool_target_path,
@@ -92,6 +93,8 @@ def is_pure_single_test_command(cmd):
     if any(tok in cmd for tok in COMPOUND_SHELL_TOKENS):
         return False
     if NO_RUN_FLAGS_RE.search(cmd):
+        return False
+    if WATCH_FLAGS_RE.search(cmd):
         return False
     core_cmd = ENV_PREFIX_RE.sub("", cmd).strip()
     return bool(TEST_RUNNER_RE.match(core_cmd))
@@ -180,7 +183,7 @@ def main():
 
         if is_pure_single_test_command(cmd):
             sanitized_cmd = (
-                f"( export PYTHONUNBUFFERED=1; "
+                f"( export PYTHONUNBUFFERED=1 CI=true; "
                 f"if (set -o pipefail 2>/dev/null) && set -o pipefail 2>/dev/null; then "
                 f"{cmd} 2>&1 | tail -n 80; "
                 f"else "

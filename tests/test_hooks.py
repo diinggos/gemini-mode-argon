@@ -1934,6 +1934,62 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         self.assertEqual(res_curl["decision"], "continue")
         self.assertIn("Argon Deterministic Verification Gate", res_curl["reason"])
 
+        # 7. Exclude watch-mode commands from wrapper and reject from satisfying stop_guard
+        watch_cmds = [
+            "vitest --watch",
+            "vitest --watch=true",
+            "npm test -- --watch",
+            "jest --watchAll",
+            "jest --watch-all",
+            "vitest watch",
+            "cargo watch",
+        ]
+        for cmd in watch_cmds:
+            # pre_tool_guard must not wrap watch runners (prevents hung terminal)
+            p_w = self.base_payload()
+            p_w["toolCall"] = {"name": "run_command", "args": {"CommandLine": cmd}}
+            res_w = run_hook("pre_tool_guard.py", p_w)
+            self.assertNotIn("export PYTHONUNBUFFERED=1", str(res_w), f"Should not wrap watch mode: {cmd}")
+
+        # Non-watch mode commands (vitest --watch=false, vitest run) ARE wrapped
+        p_safe_w = self.base_payload()
+        p_safe_w["toolCall"] = {"name": "run_command", "args": {"CommandLine": "vitest --watch=false"}}
+        res_safe_w = run_hook("pre_tool_guard.py", p_safe_w)
+        self.assertEqual(res_safe_w["decision"], "allow")
+        self.assertIn("export PYTHONUNBUFFERED=1 CI=true;", str(res_safe_w))
+
+        # Stop guard rejects vitest --watch as post-edit verification
+        app_file_watch = os.path.join(self.workspace_dir, "app_watch.py")
+        steps_watch = [
+            {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": f"printf 'def bar(): pass\\n' > {app_file_watch}"},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": "vitest --watch"},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "Command exited with code 0."},
+        ]
+        write_jsonl(self.transcript_path, steps_watch)
+        res_stop_watch = run_hook("stop_guard.py", p_stop_wrapped)
+        self.assertEqual(res_stop_watch["decision"], "continue")
+        self.assertIn("Argon Deterministic Verification Gate", res_stop_watch["reason"])
+
 
 if __name__ == "__main__":
     unittest.main()

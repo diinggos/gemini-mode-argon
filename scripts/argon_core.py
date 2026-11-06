@@ -87,6 +87,14 @@ NO_RUN_FLAGS_RE = re.compile(
     r")"
 )
 
+WATCH_FLAGS_RE = re.compile(
+    r"(?:"
+    r"(?:^|\s)--(?:watch|watchAll|watch-all)(?!(?:=false|=0|=no))\b"
+    r"|(?:^|\s)(?:vitest|cargo|pnpm|npm|yarn|bun)\s+(?:run\s+)?watch\b"
+    r")",
+    re.IGNORECASE,
+)
+
 TOKEN_SAVER_ARGS = {"on", "off", "true", "false", "1", "0", "full", "lite", "ultra", "auto"}
 
 
