@@ -2175,6 +2175,128 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         self.assertEqual(res_no_code["decision"], "continue")
         self.assertIn("Argon Reflexion Auto-Healing Gate", res_no_code["reason"])
 
+    def test_33_reviewer_stash_ci_workflows_and_failed_cmd_redirections(self):
+        """Test reviewer git stash denial, CI workflow file verification tracking, and failed command redirection edit persistence."""
+        p_stop = self.base_payload()
+        p_stop["lastUserInput"] = "/gemini-mode-argon on"
+        p_stop["terminationReason"] = "NO_TOOL_CALL"
+
+        # 1. Reviewer mode MUST deny mutating git stash commands (push, pop, drop, clear, bare stash)
+        for mutating_stash_cmd in [
+            "git stash",
+            "git stash push",
+            "git stash push -m 'wip'",
+            "git stash pop",
+            "git stash apply",
+            "git stash drop",
+            "git stash clear",
+            "git stash -u",
+            "git -C repo stash push",
+            "git stash; ls",
+        ]:
+            p_stash = self.base_payload()
+            p_stash["lastUserInput"] = "/gemini-mode-argon reviewer"
+            p_stash["toolCall"] = {
+                "name": "run_command",
+                "args": {"CommandLine": mutating_stash_cmd},
+            }
+            res_stash = run_hook("pre_tool_guard.py", p_stash)
+            self.assertEqual(
+                res_stash["decision"],
+                "deny",
+                f"Expected deny for mutating stash command '{mutating_stash_cmd}'",
+            )
+            self.assertIn("Argon Reviewer Gate", res_stash["reason"])
+
+        # 2. Reviewer mode MUST allow read-only git stash inspection (list, show)
+        for ro_stash_cmd in [
+            "git stash list",
+            "git stash list --stat",
+            "git stash show",
+            "git stash show -p",
+            "git -C repo stash show",
+        ]:
+            p_stash_ro = self.base_payload()
+            p_stash_ro["lastUserInput"] = "/gemini-mode-argon reviewer"
+            p_stash_ro["toolCall"] = {
+                "name": "run_command",
+                "args": {"CommandLine": ro_stash_cmd},
+            }
+            res_stash_ro = run_hook("pre_tool_guard.py", p_stash_ro)
+            self.assertEqual(
+                res_stash_ro["decision"],
+                "allow",
+                f"Expected allow for read-only stash command '{ro_stash_cmd}'",
+            )
+
+        # 3. Stop guard MUST track CI workflow YAML file edits as requiring verification
+        ci_workflow_file = os.path.join(self.workspace_dir, ".github", "workflows", "ci.yml")
+        steps_ci = [
+            {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "write_file",
+                        "args": {
+                            "Path": ci_workflow_file,
+                            "Content": "name: CI\non: [push]\njobs:\n  test:\n    runs-on: ubuntu-latest\n",
+                        },
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "File created."},
+        ]
+        write_jsonl(self.transcript_path, steps_ci)
+        res_ci_stop = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_ci_stop["decision"], "continue")
+        self.assertIn("Argon Deterministic Verification Gate", res_ci_stop["reason"])
+        self.assertIn("ci.yml", res_ci_stop["reason"])
+
+        # 4. Stop guard MUST record shell edits even when command exits non-zero
+        failed_edit_file = os.path.join(self.workspace_dir, "app_failed_cmd.py")
+        steps_failed_cmd = [
+            {"type": "USER_INPUT", "content": "/gemini-mode-argon on"},
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {
+                            "CommandLine": f"printf 'x = 1\\n' > {failed_edit_file} && false"
+                        },
+                    }
+                ],
+            },
+            # Command exited non-zero (failed)
+            {"type": "GENERIC", "status": "ERROR", "content": "Command exited with code 1."},
+        ]
+        write_jsonl(self.transcript_path, steps_failed_cmd)
+        res_failed_cmd_stop = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_failed_cmd_stop["decision"], "continue")
+        self.assertIn("Argon Deterministic Verification Gate", res_failed_cmd_stop["reason"])
+        self.assertIn("app_failed_cmd.py", res_failed_cmd_stop["reason"])
+
+        # 5. Subsequent Exit-Code-0 verification allows completion
+        steps_failed_cmd.extend([
+            {
+                "type": "PLANNER_RESPONSE",
+                "status": "DONE",
+                "tool_calls": [
+                    {
+                        "name": "run_command",
+                        "args": {"CommandLine": "pytest tests/test_calc.py"},
+                    }
+                ],
+            },
+            {"type": "GENERIC", "status": "DONE", "content": "1 passed\nCommand exited with code 0."},
+        ])
+        write_jsonl(self.transcript_path, steps_failed_cmd)
+        res_verified_stop = run_hook("stop_guard.py", p_stop)
+        self.assertEqual(res_verified_stop["decision"], "allow")
+
 
 if __name__ == "__main__":
     unittest.main()

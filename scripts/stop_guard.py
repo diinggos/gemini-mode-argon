@@ -59,6 +59,8 @@ CODE_EXTENSIONS = {
     ".sass",
     ".less",
     ".html",
+    ".yml",
+    ".yaml",
 }
 
 ENV_PREFIX_RE = re.compile(r"^(?:[A-Za-z_][A-Za-z0-9_]*=(?:\"[^\"]*\"|'[^']*'|[^\s]+)\s+)+")
@@ -288,15 +290,16 @@ def inspect_code_verification(transcript_path, artifact_dir="", conv_id=""):
                 edits.append(((step_idx, call_idx), canonical_path(raw_p)))
         elif name == "run_command":
             cmd = str(unwrap_arg(args.get("CommandLine", "")))
+            # Record detected shell writes regardless of the command's exit status
+            targets = extract_shell_source_edits(cmd, artifact_dir, conv_id)
+            for t in targets:
+                edits.append(((step_idx, call_idx), t))
+
             if is_verification_command(cmd):
                 if exit_code == "RUNNING":
                     continue
                 passed = (not failed) and (exit_code == 0)
                 verifications.append(((step_idx, call_idx), passed, exit_code))
-            elif not failed and (exit_code is None or exit_code == 0):
-                targets = extract_shell_source_edits(cmd, artifact_dir, conv_id)
-                for t in targets:
-                    edits.append(((step_idx, call_idx), t))
 
     if not edits:
         if not verifications:

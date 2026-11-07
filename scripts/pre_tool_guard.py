@@ -115,7 +115,7 @@ def is_reviewer_mutation_command(cmd):
 
     # 6. Git workspace/history mutating commands (with arbitrary option flags like -C or -c)
     if re.search(
-        r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-zA-Z0-9-]+(?:\s+\S+|=[^\s]+)?))*\s+(?:commit|checkout|restore|merge|rebase|cherry-pick|revert|apply|pull|reset|clean|tag|branch\s+-[dDm])\b",
+        r"\bgit\b(?:\s+(?:-C\s+\S+|-c\s+\S+|--[a-zA-Z0-9-]+(?:\s+\S+|=[^\s]+)?))*\s+(?:(?:commit|checkout|restore|merge|rebase|cherry-pick|revert|apply|pull|reset|clean|tag|branch\s+-[dDm])\b|\bstash\b(?:\s+(?!list\b|show\b)\S*|[;&|]|\s*$))",
         cmd,
         re.IGNORECASE,
     ):
