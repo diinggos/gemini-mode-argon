@@ -1,0 +1,42 @@
+{
+  "argon-scaffolding": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "python3 scripts/pre_invocation_reminder.py",
+        "timeout": 10
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "edit_file|write_file|replace_file_content|multi_replace_file_content|write_to_file|run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/pre_tool_guard.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "edit_file|write_file|replace_file_content|multi_replace_file_content|write_to_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/post_tool_ledger.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 scripts/stop_guard.py",
+        "timeout": 10
+      }
+    ]
+  }
+}
