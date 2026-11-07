@@ -2297,6 +2297,104 @@ class ArgonV25HooksTestSuite(unittest.TestCase):
         res_verified_stop = run_hook("stop_guard.py", p_stop)
         self.assertEqual(res_verified_stop["decision"], "allow")
 
+    def test_34_reviewer_python_module_extractors_and_archive_mutations(self):
+        """Reviewer mode MUST block Python zipfile/tarfile extraction/creation and mutating archive tools."""
+        # 1. Mutating Python zipfile / tarfile CLI invocations MUST be denied in reviewer mode
+        for mutating_py_cmd in [
+            "python3 -m zipfile -e archive.zip .",
+            "python3 -m zipfile --extract archive.zip ./out",
+            "python3 -m zipfile -c archive.zip app.py",
+            "python3 -m zipfile --create archive.zip app.py",
+            "python -m tarfile -e archive.tar .",
+            "python -m tarfile --extract archive.tar ./out",
+            "python -m tarfile -c archive.tar app.py",
+            "python3.11 -m zipfile -e archive.zip .",
+            "python3 -u -m zipfile -e archive.zip .",
+        ]:
+            p_rev = self.base_payload()
+            p_rev["lastUserInput"] = "/gemini-mode-argon reviewer"
+            p_rev["toolCall"] = {
+                "name": "run_command",
+                "args": {"CommandLine": mutating_py_cmd},
+            }
+            res_py = run_hook("pre_tool_guard.py", p_rev)
+            self.assertEqual(
+                res_py["decision"],
+                "deny",
+                f"Expected deny for mutating Python archive command '{mutating_py_cmd}'",
+            )
+            self.assertIn("Argon Reviewer Gate", res_py["reason"])
+
+        # 2. Read-only inspection via Python zipfile / tarfile MUST be allowed in reviewer mode
+        for ro_py_cmd in [
+            "python3 -m zipfile -l archive.zip",
+            "python3 -m zipfile --list archive.zip",
+            "python3 -m zipfile -t archive.zip",
+            "python3 -m zipfile --test archive.zip",
+            "python3 -m zipfile -h",
+            "python3 -m zipfile --help",
+            "python3 -m tarfile -l archive.tar",
+            "python3 -m tarfile --list archive.tar",
+            "python3 -m tarfile -t archive.tar",
+            "python3 -m tarfile --test archive.tar",
+        ]:
+            p_rev_ro = self.base_payload()
+            p_rev_ro["lastUserInput"] = "/gemini-mode-argon reviewer"
+            p_rev_ro["toolCall"] = {
+                "name": "run_command",
+                "args": {"CommandLine": ro_py_cmd},
+            }
+            res_py_ro = run_hook("pre_tool_guard.py", p_rev_ro)
+            self.assertEqual(
+                res_py_ro["decision"],
+                "allow",
+                f"Expected allow for read-only Python archive command '{ro_py_cmd}'",
+            )
+
+        # 3. System archive extractors / creators MUST be denied in reviewer mode
+        for mutating_sys_cmd in [
+            "unzip archive.zip",
+            "unzip archive.zip -d ./out",
+            "tar -xf archive.tar",
+            "tar -czvf archive.tar.gz src/",
+            "gunzip file.txt.gz",
+            "bunzip2 file.txt.bz2",
+            "unxz file.txt.xz",
+        ]:
+            p_sys = self.base_payload()
+            p_sys["lastUserInput"] = "/gemini-mode-argon reviewer"
+            p_sys["toolCall"] = {
+                "name": "run_command",
+                "args": {"CommandLine": mutating_sys_cmd},
+            }
+            res_sys = run_hook("pre_tool_guard.py", p_sys)
+            self.assertEqual(
+                res_sys["decision"],
+                "deny",
+                f"Expected deny for mutating system archive command '{mutating_sys_cmd}'",
+            )
+            self.assertIn("Argon Reviewer Gate", res_sys["reason"])
+
+        # 4. System archive listing / testing MUST be allowed in reviewer mode
+        for ro_sys_cmd in [
+            "unzip -l archive.zip",
+            "unzip -t archive.zip",
+            "tar -tf archive.tar",
+            "tar -tvf archive.tar",
+        ]:
+            p_sys_ro = self.base_payload()
+            p_sys_ro["lastUserInput"] = "/gemini-mode-argon reviewer"
+            p_sys_ro["toolCall"] = {
+                "name": "run_command",
+                "args": {"CommandLine": ro_sys_cmd},
+            }
+            res_sys_ro = run_hook("pre_tool_guard.py", p_sys_ro)
+            self.assertEqual(
+                res_sys_ro["decision"],
+                "allow",
+                f"Expected allow for read-only system archive command '{ro_sys_cmd}'",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

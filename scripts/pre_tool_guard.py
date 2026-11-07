@@ -133,7 +133,27 @@ def is_reviewer_mutation_command(cmd):
     ):
         return True
 
-    # 8. Network download file outputs: curl -o, curl -O, curl --remote-name, wget
+    # 8. Python archive extraction/creation CLI modules: python -m zipfile, python -m tarfile
+    if re.search(
+        r"\bpython3?(?:\.\d+)?(?:\s+-[a-zA-Z0-9]+(?:\s+\S+)?)*\s+-m\s+(?:zipfile|tarfile)\b(?:\s+(?!-[lt]\b|--list\b|--test\b|-h\b|--help\b)\S*|[;&|]|\s*$)",
+        cmd,
+        re.IGNORECASE,
+    ):
+        return True
+
+    # 9. Archive extraction and decompression tools
+    if re.search(
+        r"(?:"
+        r"\bunzip\b(?:\s+(?!-[lt]\b)\S*|[;&|]|\s*$)"
+        r"|\btar\b.*?(?:(?:\s|^)-[a-zA-Z]*[xcaruA][a-zA-Z]*\b|--extract\b|--get\b|--create\b|--append\b)"
+        r"|\b(?:gunzip|bunzip2|unxz)\b"
+        r")",
+        cmd,
+        re.IGNORECASE,
+    ):
+        return True
+
+    # 10. Network download file outputs: curl -o, curl -O, curl --remote-name, wget
     subcmds = re.split(r"(?:&&|\|\||;|\||\n)", cmd)
     for sub in subcmds:
         sub = sub.strip()
